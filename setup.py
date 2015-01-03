@@ -25,9 +25,9 @@ if SETUP_DIRNAME != '':
     os.chdir(SETUP_DIRNAME)
 
 # Paths to requirement files
-INSTALL_DEPS = os.path.join('dependencies', 'install.txt')
-TEST_DEPS = os.path.join('dependencies', 'test.txt')
-DEV_DEPS = os.path.join('dependencies', 'dev.txt')
+INSTALL_DEPS = os.path.join('deps', 'install.pip')
+TEST_DEPS = os.path.join('deps', 'test.pip')
+DEV_DEPS = os.path.join('deps', 'dev.pip')
 
 
 from setuptools.command.test import test as TestCommand
@@ -85,10 +85,10 @@ with open('VERSION') as fh:
 
 
 setup(
-    name='flask_arrested',
+    name='arrested',
     version=VERSION,
     author='Mikey Waites',
-    author_email='code@bruv.io',
+    author_email='mikey.waites@gmail.com',
     url='https://github.com/mikeywaites/flask-arrested',
     download_url='https://github.com/mikeywaites/flask-arrested/releases/tag/%s' % VERSION,
     description='A python Rest API framework for flask',
