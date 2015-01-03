@@ -22,6 +22,3 @@ A python REST API framework for flask
 * Give users confidence.  A framework whos offering is about speed and ease of use shouldn't shy form robustness and predictability.  Offer a full suite of easily runnable tests covering the full code base.
 
 * Extensible.  Whilst not making assumptions about how users should implement auth or serilization etc,  Still provide a lib of options that define best practice or 'go to tools' for getting things done.
-
-
-
