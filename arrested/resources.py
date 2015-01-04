@@ -6,10 +6,14 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 
-from flask.views import MethodView
+from flask import request
+from flask.views import View
+from flask._compat import with_metaclass
+
+from .hooks import BEFORE_HOOK
 
 
-class ApiResourceMetaclass(type):
+class ApiResourceMetaType(type):
 
     def __new__(mcs, name, bases, attrs):
 
@@ -23,7 +27,7 @@ class ApiResourceMetaclass(type):
             if getattr(val, '_register', None):
                 mcs.register_hook(attrs['_hooks'], val)
 
-        new_class = (super(ApiResourceMetaclass, mcs)
+        new_class = (super(ApiResourceMetaType, mcs)
                      .__new__(mcs, name, bases, attrs))
 
         return new_class
