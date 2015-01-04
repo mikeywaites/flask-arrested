@@ -14,10 +14,10 @@ class ApiResourceMetaclass(type):
     def __new__(mcs, name, bases, attrs):
 
         attrs['_hooks'] = {
-            'GET': {},
-            'POST': {},
-            'PUT': {},
-            'DELETE': {}
+            'get': {},
+            'post': {},
+            'put': {},
+            'delete': {}
         }
         for key, val in attrs.iteritems():
             if getattr(val, '_register', None):
@@ -28,10 +28,12 @@ class ApiResourceMetaclass(type):
 
         return new_class
 
-    def register_hook(self, hook_data, hook):
-        name, type_, method = hook._register
-        hook_data[method].setdefault(type_, {})
-        hook_data[method][type_][name] = hook
+    @classmethod
+    def register_hook(self, hook_data, func):
+
+        name, hook, method = func._register
+        hook_data[method.lower()].setdefault(hook, {})
+        hook_data[method.lower()][hook][name] = func
 
         return hook_data
 
