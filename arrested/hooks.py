@@ -70,8 +70,8 @@ class request_hook(object):
 
     def __call__(self, f, *args, **kwargs):
 
-        name = self.name or '%s_%s_%s' (f, self.hook, self.method)
-        f._register = (name, self.type_, self.method)
+        name = self.name or '%s_%s_%s' % (f.__name__, self.hook, self.method)
+        f._register = (name, self.hook, self.method)
 
         @wraps(f)
         def wrapped(self, *f_args, **f_kwargs):
