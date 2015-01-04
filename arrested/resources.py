@@ -49,12 +49,39 @@ class ApiResourceOpts(object):
         self.roles = getattr(meta, 'roles', {})
 
 
-class ApiResource(object):
+class ApiResource(with_metaclass(ApiResourceMetaType, View)):
 
-    __metaclass__ = ApiResourceMetaclass
+    __metaclass__ = ApiResourceMetaType
 
     class Meta:
         pass
 
     def __init__(self, data=None, input=None):
         self.opts = ApiResourceOpts(self.Meta)
+
+    def get_hooks(self, hook):
+
+        meth_name = self.request.method.lower()
+        for _, func in self._hooks[meth_name].get(hook, {}).iteritems():
+            yield func
+
+    def dispatch_request(self, *args, **kwargs):
+
+        self.request = request
+        meth = getattr(self, request.method.lower(), None)
+        if meth is None and request.method == 'HEAD':
+            meth = getattr(self, 'get', None)
+        assert meth is not None, 'Unimplemented method %r' % request.method
+
+        for func in self.get_hooks(BEFORE_HOOK):
+            func(self, request)
+
+        try:
+            return meth(*args, **kwargs)
+        except Exception as e:
+            for func in self.get_hooks('error'):
+                func(self, request)
+            raise e
+        finally:
+            for func in self.get_hooks('after'):
+                func(self, request)
