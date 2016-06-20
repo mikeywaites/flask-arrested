@@ -1,0 +1,4 @@
+py3:
+  build: .
+  volumes:
+    - .:/opt/code

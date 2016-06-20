@@ -1,35 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""
-Flask-Arrested
------------
-
-A Rest API Framework for Flask.
-"""
-
-import os
 import sys
 
 from setuptools import setup, find_packages
-
-
-# Get current directory where setup is running
-try:
-    SETUP_DIRNAME = os.path.dirname(__file__)
-except NameError:
-    SETUP_DIRNAME = os.path.dirname(sys.argv[0])
-
-# Change directory
-if SETUP_DIRNAME != '':
-    os.chdir(SETUP_DIRNAME)
-
-# Paths to requirement files
-INSTALL_DEPS = os.path.join('deps', 'install.pip')
-TEST_DEPS = os.path.join('deps', 'test.pip')
-DEV_DEPS = os.path.join('deps', 'dev.pip')
-
-
 from setuptools.command.test import test as TestCommand
 
 
@@ -37,7 +8,7 @@ class PyTest(TestCommand):
 
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = ['-s']
+        self.test_args = ['--cov=arrested', '--cov-report=term-missing', '-s']
         self.test_suite = True
 
     def run_tests(self):
@@ -47,66 +18,48 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-def read_dependencies(filename):
-    """
-    Read requirements file and process them into a list
-    fpr usage in the setup function
-
-    :param filename: Path to the file to read line by line
-    :type filename: string
-
-    :returns: list -- list of requirements
-    """
-
-    dependencies = []
-    with open(filename) as f:
-        for line in f.readlines():
-            if not line or line.startswith('#'):
-                continue
-            dependencies.append(line.strip())
-    return dependencies
+__version__ = '0.1.0'
 
 
-def read(name):
-    """
-    Read file in local current working directory and return the contents
+def read(path):
 
-    :param name: The name of the file
-    :type name: string
-
-    :returns: string -- Contents of file
-    """
-
-    return open(name).read()
-
-
-with open('VERSION') as fh:
-    VERSION = fh.read().strip()
-
+    with open(path) as fh:
+        return fh.read()
 
 setup(
     name='arrested',
-    version=VERSION,
+    version=__version__,
     author='Mikey Waites',
     author_email='mikey.waites@gmail.com',
     url='https://github.com/mikeywaites/flask-arrested',
-    download_url='https://github.com/mikeywaites/flask-arrested/releases/tag/%s' % VERSION,
+    download_url='https://github.com/mikeywaites/flask-arrested/releases/tag/%s' % __version__,
     description='A python Rest API framework for flask',
-    long_description=read('README.rst'),
+    long_description='flask arrested RESTFul api framework',
     packages=find_packages(
         exclude=["tests"]
     ),
     include_package_data=True,
     zip_safe=False,
-    install_requires=read_dependencies(INSTALL_DEPS),
-    extras_require={
-        'develop': read_dependencies(DEV_DEPS)+read_dependencies(TEST_DEPS)
-    },
-    tests_require=read_dependencies(TEST_DEPS),
+    install_requires=[
+        'flask>=0.10.0'
+    ],
+    tests_require=[
+        'ipdb==0.10.0',
+        'pytest==2.9.2',
+        'pytest-cov==2.2.1',
+        'py_kim',
+    ],
     cmdclass={
         'test': PyTest
     },
-    dependency_links=[],
+    extras_require={
+        'develop': [
+            'sphinx==1.4.4',
+        ]
+    },
+    dependency_links=[
+        'https://github.com/mikeywaites/kim/tarball/release/1.0.0-beta#egg=kim-1.0.0'
+    ],
     entry_points={},
     classifiers=[
         'Environment :: Web Environment',

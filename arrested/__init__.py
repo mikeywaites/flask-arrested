@@ -5,20 +5,8 @@
 # This module is part of Flask-Arrested and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+#flake8:NOQA
 
-from .resources import ApiResource
 
-from .hooks import (
-    request_hook,
-    BEFORE_HOOK,
-    AFTER_HOOK
-)
-
-from .http import (
-    GET,
-    POST,
-    PUT,
-    DELETE,
-    PATCH,
-    OPTIONS
-)
+from .app import Arrested
+from .api import Api

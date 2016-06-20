@@ -1,16 +1,12 @@
-FROM ubuntu:14.04
-
-RUN  apt-get update && apt-get install -y software-properties-common python python-dev python-pip libffi-dev libpq-dev git-core postgresql-client \
-    && apt-get clean \
-    && apt-get autoclean \
-    && sudo apt-get autoremove -y \
-    && rm -rf /var/lib/{apt,dpkg,cache,log}/
+FROM python:3.5
 
 RUN mkdir /opt/code
 ADD . /opt/code
 WORKDIR /opt/code
 
-RUN python setup.py develop
+RUN pip install -U pip
+RUN pip install -U setuptools
+RUN pip install --editable .
 
 VOLUME ["/opt/code"]
 

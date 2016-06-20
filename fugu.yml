@@ -1,7 +1,0 @@
-dev: &dev
-  image: mikeywaites/flask-arrested
-  tty: true
-  interactive: true
-  rm: true
-  volume:
-    - $(pwd):/opt/code

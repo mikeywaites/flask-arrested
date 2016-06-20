@@ -6,25 +6,32 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import pytest
-import arrested
 
-from flask import Flask, abort
+from flask import Flask
 
-
-class UserApi(arrested.ApiResource):
-
-    @arrested.request_hook(hook=arrested.BEFORE_HOOK, method=arrested.GET)
-    def foo(self, request):
-        abort(400)
-
-    def get(self):
-        return 'foo', 200
+from arrested import Arrested
 
 
-@pytest.yield_fixture(scope='session')
-def app(request):
+@pytest.yield_fixture(scope='function')
+def flask_app(request):
 
-    _app = Flask('arrested')
-    _app.testing = True
-    _app.add_url_rule('/', view_func=UserApi.as_view('user'))
-    yield _app
+    _app = Flask('arrested_test_app')
+
+    with _app.test_request_context():
+        yield _app
+
+
+@pytest.yield_fixture(scope='function')
+def client(request, flask_app):
+
+    client = flask_app.test_client()
+
+    yield client
+
+
+@pytest.yield_fixture(scope='function')
+def api(request, flask_app):
+
+    api = Arrested(flask_app)
+
+    yield api
