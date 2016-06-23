@@ -19,7 +19,7 @@ def hook(methods=['GET'], type_='before_request'):
     Flask is that this before hook will conditionaly run based on the HTTP
     verb and the endpoint being called.
 
-    .. codeblock:: python
+    .. code-block:: python
 
         class MyResource(Resource):
 
@@ -56,8 +56,6 @@ class Api(MethodView):
     """
 
     endpoint_name = None
-    request_handler = None
-    response_handler = None
     methods = ['GET']
 
     def make_response(self, json_data, status=200):
@@ -109,7 +107,7 @@ class Api(MethodView):
 
         Before request hooks are defined on a per request, per method basis.
 
-        .. codeblock:: python
+        .. code-block:: python
 
             class MyResource(Resource):
 
@@ -131,7 +129,7 @@ class Api(MethodView):
         The hooks are registered as :py:class:`Flask.after_request`
         and therefore follow the same rules.
 
-        .. codeblock:: python
+        .. code-block:: python
 
             class MyResource(Resource):
 
@@ -145,7 +143,13 @@ class Api(MethodView):
         """
         return self._get_hooks('after_request')
 
-    def get_response_hanlder_params(self, **params):
+
+class Resource(object):
+
+    request_handler = None
+    response_handler = None
+
+    def get_response_handler_params(self, **params):
         """Return a dictionary of params to pass to :py:class:`ResponseHandler`
 
         :param params: A dictionary containing config options
@@ -169,7 +173,7 @@ class Api(MethodView):
             'Please define a response_handler ' \
             ' for Resource: %s' % self.__class__.__name__
 
-        return self.response_handler(**self.get_response_hanlder_params())
+        return self.response_handler(**self.get_response_handler_params())
 
     def get_request_handler(self):
         """Return a request handler instance for this Resource.
@@ -181,17 +185,17 @@ class Api(MethodView):
         return self.request_handler(**self.get_request_handler_params())
 
 
-class ListableResource(object):
-    """ListableResource provides abilities for handling `GET` requests.
+class BaseListableResource(Resource):
+    """BaseListableResource provides abilities for handling `GET` requests.
 
-    ListableResource represents a list of items described by a RESTFul
+    BaseListableResource represents a list of items described by a RESTFul
     url such as htttps://api.example.com/v1/users.
 
-    .. codeblock:: python
+    .. code-block:: python
 
-        from arrested import Api, ListableResource
+        from arrested import Api, BaseListableResource
 
-        class UsersApi(Api, ListableResource):
+        class UsersApi(Api, BaseListableResource):
 
             url = '/users'
             endpoint_name='users.index'
@@ -237,12 +241,12 @@ class ListableResource(object):
         the `reponse_handler`.  This is typically done using a
         :py:class:`ListMixin` provided or by a custom mixin.
 
-        .. codeblock:: python
+        .. code-block:: python
 
-            from arrested import Api, ListableResource
+            from arrested import Api, BaseListableResource
             from arrested.mixins import ListMixin
 
-            class UsersApi(Api, ListableResource):
+            class UsersApi(Api, BaseListableResource):
 
                 url = '/users'
                 endpoint_name='users.index'
@@ -273,15 +277,15 @@ class ListableResource(object):
         return self.get_list_response()
 
 
-class CreateableResource(object):
-    """CreateableResource provides abilities for handling `POST` requests.
+class BaseCreateableResource(Resource):
+    """BaseCreateableResource provides abilities for handling `POST` requests.
 
-    .. codeblock:: python
+    .. code-block:: python
 
         from arrested import IndexApi
         from arrested.mixins import ListMixin
 
-        class UsersApi(Api, CreateableResource):
+        class UsersApi(Api, BaseCreateableResource):
 
             url = '/users'
             endpoint_name='users.index'
@@ -301,6 +305,11 @@ class CreateableResource(object):
         :meth:`post`
 
     """
+
+    def save_object(self):
+        """TODO(mike) Docs
+        """
+        pass
 
     def get_create_response(self, status=201):
         """Once an incoming data set has been processed by the RequestHandler,
@@ -334,10 +343,10 @@ class CreateableResource(object):
         for the request handler to process.  This is typically done using one
         of the :py:class:`CreateMixin` provided or by a custom mixin.
 
-        .. codeblock:: python
+        .. code-block:: python
 
             from flask import request as flask_request
-            from arrested import Api, CreateableResource
+            from arrested import Api, BaseCreateableResource
             from arrested.mixins import CreateMixin
 
             class UsersApi(Api, CreateableResource):
@@ -361,5 +370,7 @@ class CreateableResource(object):
         # TODO(mike) we need to handle the processing error's raised by
         # RequestHanlder here and call :meth:on_errors
         self.request.process(self.get_data())
+
+        self.save_object()
 
         return self.get_create_response()

@@ -102,7 +102,7 @@ class ModelListMixin(ListMixin):
 
     Results will also optionally be paginated when ``paginate=True`` is set.
 
-    .. codeblock:: python
+    .. code-block:: python
 
         clas UserIndexApi(Resource, SQLAListResourceMixin):
 

@@ -30,6 +30,24 @@
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+
+
+import datetime
+import sys
+import os
+
+# Add flask_velox to the Path
+root = os.path.abspath(
+    os.path.join(
+        os.path.dirname(__file__),
+        '..',
+    )
+)
+
+sys.path.append(os.path.join(root, 'arrested'))
+now = datetime.datetime.utcnow()
+year = now.year
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
@@ -38,6 +56,8 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.githubpages',
 ]
+
+import arrested  # NOQA
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

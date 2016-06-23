@@ -11,10 +11,10 @@ class Arrested(object):
     flask appliaction initialisation api.
 
     Instantiating the Arrested object can be done in one of two ways.  You
-    may pass the :py:class:``flask.Flask`` application object
-    to the construtor::
+    may pass the :class:`flask.Flask` application object
+    to the construtor
 
-    .. codeblock:: python
+    .. sourcecode:: python
 
         from flask import Flask
         from arrested import Arrested
@@ -27,10 +27,9 @@ class Arrested(object):
     Or the flask application object may be lazily loaded.  This is useful when
     users make use of the factory method for generating flask objects.
 
-    You may define all your Api Resources in a module called myproject.api.
-    This file might look something like the following
+    You might define all your Api Resources in a module called `myproject.api.
 
-    .. codeblock:: python
+    .. sourcecode:: python
 
         from arrested import Arrested, Api
 
@@ -46,7 +45,7 @@ class Arrested(object):
     In our flask factory function we'd simply need to import the api object
     and register it with our flask app object using ``api.init_app()`` method.
 
-    .. codeblock:: python
+    .. sourcecode:: python
 
         from flask import Flask
 
@@ -99,16 +98,16 @@ class Arrested(object):
     def register(self, _Api, url=None):
         """Register a new endpoint for a resource in this API.
 
-        We don't make use of :py:class`flask.Blueprint` here as
+        We don't make use of :class`flask.Blueprint` here as
         once the blueprint has been registered with the flask app
         object subsequent calls to Blueprint.add_url_rule will not
         actually be added to the apps url_map.
 
-        .. codeblock:: python
+        .. sourcecode:: python
 
             api.regiter(UserIndexApi)
 
-        :param _Api: :py:class:`Api` class being registered
+        :param _Api: :class:`arrested.api.Api` class being registered
         :param url: provide a url to override the _Api.url param
         """
 

@@ -7,8 +7,6 @@
 
 import json
 
-from kim.exception import MappingInvalid
-
 
 class Handler(object):
     """Handler classes are an interface between your Arrested Apis and your
@@ -20,7 +18,7 @@ class Handler(object):
     user want's to implement their RESTFul api, Handlers provide a simple and
     flexibile way to handle data on an Api by Api basis.
 
-    .. codeblock:: python
+    .. code-block:: python
 
         from arrested import Api
         from arrested.handlers import Handler
@@ -79,7 +77,7 @@ class Handler(object):
 
         Here's an example of a RequestHandler integrating with the Kim library.
 
-        .. codeblock:: python
+        .. code-block:: python
 
             def handle(self, data):
                 try:
@@ -107,7 +105,7 @@ class Handler(object):
 
         :params data: The data the handler should process
 
-        .. codeblock:: python
+        .. code-block:: python
 
             def post(self, *args, **kwargs):
 
@@ -123,59 +121,3 @@ class Handler(object):
         self.data = self.handle(data)
 
 
-class KimHandler(Handler):
-
-    def __init__(self, *args, **params):
-        """TODO(mike) Docs
-        """
-        super(KimHandler, self).__init__(*args, **params)
-
-        self.mapper_class = params.pop('mapper_class', None)
-        self.mapper_kwargs = params.pop('mapper_kwargs', {})
-        self.role = params.pop('role', '__default__')
-        self.many = params.pop('many', False)
-        self.raw = params.pop('raw', False)
-
-    @property
-    def mapper(self):
-        """TODO(mike) Docs
-        """
-        if self.mapper_class is None:
-            raise Exception('KimHandler requires a Kim mapper_class')
-
-        return self.mapper_class
-
-
-class KimResponseHandler(KimHandler):
-    """TODO(mike) Docs
-    """
-
-    def handle(self, data):
-        """TODO(mike) Docs
-        """
-
-        if self.many:
-            return self.mapper.many(raw=self.raw, **self.mapper_kwargs) \
-                .serialize(data, role=self.role)
-        else:
-            return self.mapper(obj=data, raw=self.raw, **self.mapper_kwargs) \
-                .serialize(role=self.role)
-
-
-class KimRequestHandler(KimHandler):
-    """TODO(mike) Docs
-    """
-
-    def handle(self, data):
-        """TODO(mike) Docs
-        """
-
-        try:
-            if self.many:
-                return self.mapper.many(raw=self.raw, **self.mapper_kwargs) \
-                    .marshal(data, role=self.role)
-            else:
-                return self.mapper(data=data, raw=self.raw, **self.mapper_kwargs) \
-                    .marshal(role=self.role)
-        except MappingInvalid as e:
-            self.errors = e.errors

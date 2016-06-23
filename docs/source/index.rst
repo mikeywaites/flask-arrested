@@ -3,20 +3,25 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Arrested's documentation!
+Flask-Arrested
 ====================================
 
-Contents:
+Usage Documentation
+-------------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
+
+   app
+   defining-apis
+   resources
+   handlers
 
 
+Reference
+---------
 
-Indices and tables
-==================
+.. toctree::
+   :maxdepth: 3
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   api

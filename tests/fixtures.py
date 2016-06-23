@@ -1,5 +1,5 @@
 from arrested import Api
-from arrested.api import ListableResource, CreateableResource
+from arrested.api import BaseListableResource, BaseCreateableResource
 from arrested.handlers import Handler
 
 
@@ -25,10 +25,20 @@ class TestResource(Api):
         return ''
 
 
-class TestIndexApi(Api, ListableResource, CreateableResource):
+class TestIndexApi(Api, BaseListableResource, BaseCreateableResource):
 
     response_handler = TestResponseHandler
     request_handler = TestRequestHandler
 
     url = '/tests'
     endpoint_name = 'tests.index'
+
+
+class MockUser(object):
+
+    def __init__(self, id='1', username=None, email=None, is_admin=False):
+
+        self.id = id
+        self.username = username
+        self.email = email
+        self.is_admin = is_admin
