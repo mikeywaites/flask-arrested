@@ -42,7 +42,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'flask>=0.10.0',
-        'py_kim',
+        'py_kim==1.0.0',
         'sqlalchemy==1.0.13',
     ],
     tests_require=[
@@ -60,7 +60,7 @@ setup(
         ]
     },
     dependency_links=[
-        'https://github.com/mikeywaites/kim/tarball/release/1.0.0-beta#egg=kim-1.0.0'
+        'https://github.com/mikeywaites/kim/tarball/release/1.0.0-beta#egg=py_kim-1.0.0'
     ],
     entry_points={},
     classifiers=[
