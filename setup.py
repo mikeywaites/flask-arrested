@@ -8,7 +8,7 @@ class PyTest(TestCommand):
 
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = ['--cov=arrested', '--cov-report=term-missing', '-s', '-x', '--tb=short']
+        self.test_args = ['--cov=arrested', '--cov-report=term-missing', '-s', '--tb=short']
         self.test_suite = True
 
     def run_tests(self):
@@ -50,6 +50,7 @@ setup(
         'pytest==2.9.2',
         'pytest-cov==2.2.1',
         'Flask-SQLAlchemy==2.1',
+        'flask-oauthlib==0.9.3',
     ],
     cmdclass={
         'test': PyTest

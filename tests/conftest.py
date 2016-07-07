@@ -10,7 +10,7 @@ import pytest
 from flask import Flask
 
 from arrested import Arrested
-from .api import db, TestUsersIndex, TestUserObjectApi
+from .api import db, oauth, TestUsersIndex, TestUserObjectApi
 
 
 @pytest.yield_fixture(scope='function')
@@ -23,6 +23,7 @@ def flask_app(request):
 
     with _app.test_request_context():
         db.init_app(_app)
+        oauth.init_app(_app)
         yield _app
 
 

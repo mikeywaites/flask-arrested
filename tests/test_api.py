@@ -9,7 +9,7 @@ from flask import url_for
 from arrested import Arrested
 from arrested.api import hook, Api, ListableResource, CreateableResource
 
-from .api import User, TestUsersIndex
+from .api import User, TestUsersIndex, create_users
 
 
 def test_before_request_hook_registered(flask_app, client):
@@ -143,19 +143,6 @@ def test_after_request_hook_registered(flask_app, api, client):
     assert hook_mock.return_value == 1
 
 
-def create_users(session, num_users):
-
-    users = []
-    for i in range(num_users):
-        users.append(User(name='user-%s' % i,
-                          password='%s' % i,
-                          id='%s' % i))
-    session.add_all(users)
-    session.commit()
-
-    return users
-
-
 def test_get_index_api(flask_app, api, client, db_session):
 
     u1, u2 = create_users(db_session, 2)
@@ -175,8 +162,8 @@ def test_get_index_api(flask_app, api, client, db_session):
             'prev_page': None,
         },
         'payload': [
-            {'id': u1.id, 'name': u1.name},
-            {'id': u2.id, 'name': u2.name}
+            {'id': u1.id, 'name': u1.name, 'is_admin': False},
+            {'id': u2.id, 'name': u2.name, 'is_admin': False}
         ]
     }
 
@@ -190,7 +177,7 @@ def test_get_index_api_per_page(flask_app, api, client, db_session):
     assert resp.status_code == 200
     assert resp.content_type == 'application/json'
     data = json.loads(resp.data.decode('utf-8'))
-    assert data == {
+    exp = {
         'meta': {
             'total_pages': 2,
             'total_objects': 2,
@@ -200,9 +187,10 @@ def test_get_index_api_per_page(flask_app, api, client, db_session):
             'prev_page': None,
         },
         'payload': [
-            {'id': u1.id, 'name': u1.name},
+            {'id': u1.id, 'name': u1.name, 'is_admin': False},
         ]
     }
+    assert data == exp
 
     # ensure it defaults to the `num_per_page` param when an invalid type
     # is provided.
@@ -222,8 +210,8 @@ def test_get_index_api_per_page(flask_app, api, client, db_session):
             'prev_page': None,
         },
         'payload': [
-            {'id': u1.id, 'name': u1.name},
-            {'id': u2.id, 'name': u2.name},
+            {'id': u1.id, 'name': u1.name, 'is_admin': False},
+            {'id': u2.id, 'name': u2.name, 'is_admin': False},
         ]
     }
 
@@ -247,7 +235,7 @@ def test_get_index_api_specify_page(flask_app, api, client, db_session):
             'prev_page': 1,
         },
         'payload': [
-            {'id': u2.id, 'name': u2.name},
+            {'id': u2.id, 'name': u2.name, 'is_admin': False},
         ]
     }
 
@@ -286,7 +274,7 @@ def test_get_index_api_specify_page(flask_app, api, client, db_session):
             'prev_page': None,
         },
         'payload': [
-            {'id': u1.id, 'name': u1.name},
+            {'id': u1.id, 'name': u1.name, 'is_admin': False},
         ]
     }
 
@@ -310,8 +298,8 @@ def test_get_index_api_no_pagination(flask_app, api, client, db_session):
     data = json.loads(resp.data.decode('utf-8'))
     assert data == {
         'payload': [
-            {'id': u1.id, 'name': u1.name},
-            {'id': u2.id, 'name': u2.name},
+            {'id': u1.id, 'name': u1.name, 'is_admin': False},
+            {'id': u2.id, 'name': u2.name, 'is_admin': False},
         ]
     }
 
@@ -329,13 +317,18 @@ def test_post_index_api(flask_app, api, client, db_session):
     assert resp.status_code == 201
     assert resp.content_type == 'application/json'
     data = json.loads(resp.data.decode('utf-8'))
-    assert data == {'payload': {'id': 'mike-id', 'name': 'mike'}}
+    assert data == {
+        'payload': {
+            'id': 'mike-id', 'name': 'mike', 'is_admin': False
+        }
+    }
 
     user = db_session.query(User).get(data['payload']['id'])
 
-    # the marshal role we are using should exlucde the users password field
     assert user is not None
-    assert user.password is None
+    assert user.name == 'mike'
+    assert user.password == '123123'
+    assert user.is_admin is False
 
 
 def test_post_index_api_with_errors(flask_app, api, client, db_session):
@@ -353,6 +346,7 @@ def test_post_index_api_with_errors(flask_app, api, client, db_session):
             'error': True,
             'errors': {
                 'name': 'This is a required field',
+                'password': 'This is a required field',
             }
         }
     }
@@ -366,7 +360,11 @@ def test_get_object_api(flask_app, api, client, db_session):
     assert resp.status_code == 200
     assert resp.content_type == 'application/json'
     data = json.loads(resp.data.decode('utf-8'))
-    assert data == {'payload': {'id': u1.id, 'name': u1.name}}
+    assert data == {
+        'payload': {
+            'id': u1.id, 'name': u1.name, 'is_admin': False
+        }
+    }
 
 
 def test_get_object_does_not_exist(flask_app, api, client, db_session):
@@ -394,7 +392,11 @@ def test_put_object_api(flask_app, api, client, db_session):
     assert resp.status_code == 200
     assert resp.content_type == 'application/json'
     data = json.loads(resp.data.decode('utf-8'))
-    assert data == {'payload': {'id': u1.id, 'name': 'New Name'}}
+    assert data == {
+        'payload': {
+            'id': u1.id, 'name': 'New Name', 'is_admin': False
+        }
+    }
 
     user = db_session.query(User).get(data['payload']['id'])
     assert user.name == 'New Name'
@@ -411,7 +413,11 @@ def test_patch_object_api(flask_app, api, client, db_session):
     assert resp.status_code == 200
     assert resp.content_type == 'application/json'
     data = json.loads(resp.data.decode('utf-8'))
-    assert data == {'payload': {'id': u1.id, 'name': u1.name}}
+    assert data == {
+        'payload': {
+            'id': u1.id, 'name': u1.name, 'is_admin': False,
+        }
+    }
 
     user = db_session.query(User).get(data['payload']['id'])
     assert user.name == u1.name
@@ -428,17 +434,3 @@ def test_delete_object_api(flask_app, api, client, db_session):
 
     user = db_session.query(User).get(u1.id)
     assert user is None
-
-
-def test_put_object_api_with_errors(flask_app, api, db_session, client):
-
-    u1, = create_users(db_session, 1)
-    data = {}
-    resp = client.put(
-        url_for('api.users.object', obj_id=u1.id),
-        data=json.dumps(data), content_type='application/json')
-
-    assert resp.status_code == 400
-    assert resp.content_type == 'application/json'
-    data = json.loads(resp.data.decode('utf-8'))
-    assert data == {'error': True}
