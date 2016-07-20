@@ -6,7 +6,7 @@ WORKDIR /opt/code
 
 RUN pip install -U pip
 RUN pip install -U setuptools
-RUN pip install --editable .
+RUN python setup.py develop
 
 VOLUME ["/opt/code"]
 
