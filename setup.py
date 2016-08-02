@@ -44,6 +44,7 @@ setup(
         'flask>=0.10.0',
         'py_kim==1.0.0',
         'sqlalchemy==1.0.13',
+        'iso8601==0.1.11',
     ],
     tests_require=[
         'ipdb==0.10.0',

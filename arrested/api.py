@@ -5,8 +5,10 @@
 # This module is part of Flask-Arrested and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+import datetime
 import inspect
 import json
+import iso8601
 
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -16,6 +18,103 @@ from flask.views import MethodView
 from .contrib.kim import KimRequestHandler, KimResponseHandler
 from .contrib.sqa import SqlAlchemyPaginator
 from .mixins import ModelMixin
+
+
+class RequestParamParser(object):
+    """This class provides the ability for end-users to validate and parse
+    query parameters.  Its provides some basic handling for
+    types commonly used with query params like str, ints and dates.
+
+    The :meth:`.HttpResource.param` is used to call the
+    :class:`RequestParamParser` as demonstrated below.
+
+    Useage::
+
+        class MyApi(Api):
+
+            def get_query(self):
+
+                since = self.param('since').date()
+                before = self.param('before').date()
+                limit = self.param('limit').int()
+
+                return get_user(since, before, limit)
+
+    .. seealso::
+
+        :meth:`.HttpResource.param`
+
+    """
+
+    def __init__(self, param_name, **params):
+
+        self.param = self._get_param_from_request(param_name)
+        self.values = params.pop('values', [])
+
+    def _get_param_from_request(self, param_name):
+        """Pull the param form the flask request object.
+        """
+
+        return request.args.get(param_name, None)
+
+    def _get_date_obj(self, timestamp, fmt):
+
+        return datetime.datetime.strptime(timestamp, fmt)
+
+    def str(self):
+        """Validate and parse a str.
+
+        :returns: A ``str`` object, or None when invalid.
+        """
+        if self.param is None:
+            return None
+
+        try:
+            return str(self.param)
+        except Exception:
+            return None
+
+    def int(self):
+        """Validate and parse a str to an integer.
+
+        :returns: An ``int`` object, or None when invalid.
+        """
+        if self.param is None:
+            return None
+
+        try:
+            return int(self.param)
+        except Exception:
+            return None
+
+    def date(self, fmt='%Y-%m-%d'):
+        """Validate and parse a str to a date object.
+
+        :param fmt: Specify the date fmt string passed to strptime
+        :returns: A python ``date`` object, or None when invalid.
+        """
+        param = self.str()
+        if param is None:
+            return None
+        try:
+            return self._get_date_obj(param, fmt).date()
+        except Exception:
+            return None
+
+    def iso8601(self):
+        """Validate and parse a str to a datetime object.
+
+        :param fmt: Specify the date fmt string passed to strptime
+        :returns: A python ``datetime`` object, or None when invalid.
+        """
+        param = self.str()
+        if param is None:
+            return None
+
+        try:
+            return iso8601.parse_date(param)
+        except Exception:
+            return None
 
 
 def hook(methods=['GET'], type_='before_request'):
@@ -208,6 +307,7 @@ class HttpResource(object):
     serialize_role = '__default__'
     mapper_class = None
     raw = False
+    param_parser_class = RequestParamParser
     response_handler = KimResponseHandler
     request_handler = KimRequestHandler
     serialize_create_role = '__default__'
@@ -256,6 +356,24 @@ class HttpResource(object):
         params['raw'] = self.raw
 
         return params
+
+    def param(self, name, **parser_kwargs):
+        """Find and Validate a query param by name using the
+        :class:`.RequestParamParser defined on this class.
+
+        See the :class:`.RequestParamParser` for the list of available parsing
+        options.
+
+        .. sourcecode::
+
+            class MyApi(Api):
+
+                def get_query(self):
+                    search = self.param('search', fmt='str')
+                    return get_users(search=search)
+        """
+
+        return self.param_parser_class(name, **parser_kwargs)
 
 
 class ListableResource(HttpResource, ModelMixin):
