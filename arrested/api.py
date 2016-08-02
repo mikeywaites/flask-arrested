@@ -71,7 +71,7 @@ class RequestParamParser(object):
 
         try:
             return str(self.param)
-        except Exception:
+        except (ValueError, TypeError):
             return None
 
     def int(self):
@@ -84,7 +84,7 @@ class RequestParamParser(object):
 
         try:
             return int(self.param)
-        except Exception:
+        except (ValueError, TypeError):
             return None
 
     def date(self, fmt='%Y-%m-%d'):
@@ -98,7 +98,7 @@ class RequestParamParser(object):
             return None
         try:
             return self._get_date_obj(param, fmt).date()
-        except Exception:
+        except (ValueError, TypeError):
             return None
 
     def iso8601(self):
@@ -113,7 +113,7 @@ class RequestParamParser(object):
 
         try:
             return iso8601.parse_date(param)
-        except Exception:
+        except iso8601.ParseError:
             return None
 
 
