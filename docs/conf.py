@@ -14,7 +14,7 @@ root = os.path.abspath(
 #sys.path.append(os.path.join(root, 'doit'))
 now = datetime.datetime.utcnow()
 year = now.year
-version = open(os.path.join(root, 'VERSION')).read().splitlines()[0]
+version = '0.1.0'
 
 import arrested  # noqa
 
