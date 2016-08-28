@@ -13,11 +13,6 @@ Usage Documentation
    :maxdepth: 3
 
    quickstart
-   app
-   defining-apis
-   resources
-   handlers
-   hooks
 
 
 Reference
