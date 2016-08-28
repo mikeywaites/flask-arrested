@@ -12,13 +12,4 @@ Usage Documentation
 .. toctree::
    :maxdepth: 3
 
-   quickstart
-
-
-Reference
----------
-
-.. toctree::
-   :maxdepth: 3
-
-   api
+   source/quickstart
