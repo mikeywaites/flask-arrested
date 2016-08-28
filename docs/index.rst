@@ -12,4 +12,4 @@ Usage Documentation
 .. toctree::
    :maxdepth: 3
 
-   source/quickstart
+   start
