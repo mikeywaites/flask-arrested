@@ -40,7 +40,7 @@ exclude_patterns = []
 # Theme
 sys.path.append(os.path.abspath('_themes'))
 html_theme_path = ['_themes', ]
-html_static_path = ['_static', ]
+#html_static_path = ['_themes/kr/_static', ]
 html_theme = 'kr'
 #html_sidebars = {
 #    'index':    ['sidebar_intro.html', 'localtoc.html', 'relations.html',
@@ -48,4 +48,7 @@ html_theme = 'kr'
 #    '**':       ['sidebar_intro.html', 'localtoc.html', 'relations.html',
 #                 'sourcelink.html', 'searchbox.html']
 #}
+html_sidebars = {
+    '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'],
+}
 autoclass_content = 'both'
