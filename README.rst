@@ -1,4 +1,8 @@
-.. _quickstart:
+Arrested
+==============
+
+Arrested is a framework for rapidly building scalable REST Apis in Flask.  It makes no assumptions about the way you should or shouldn't build your apis and instead provides a simple yet powerful collection of
+concepts that can be combined to deliver the API's you want.
 
 Features
 ----------
@@ -102,9 +106,3 @@ SQLAlchemy backed User rest api.  You can find the full code used in this exampl
     api.register(UserObjectApi)
     api.register(CompaniesIndexApi)
     api.register(CompanyObjectApi)
-
-
-Further Reading
---------------------
-
-For a more detailed look at using Arrested to build your REST Apis please take a look at the :ref:`tutorial`.  For more advanced topics and use cases please view the :ref:`recepies` section.
