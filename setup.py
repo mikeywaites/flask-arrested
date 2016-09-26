@@ -42,7 +42,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'flask>=0.10.0',
-        'py-kim==1.0.0-rc4',
+        'py-kim==1.0.0-rc5',
         'sqlalchemy==1.0.13',
         'iso8601==0.1.11',
     ],
@@ -62,7 +62,7 @@ setup(
         ]
     },
     dependency_links=[
-        'https://github.com/mikeywaites/kim/archive/1.0.0-rc4.tar.gz#egg=py_kim-1.0.0-rc4',
+        'https://github.com/mikeywaites/kim/archive/kim2-1.0.0-rc5.tar.gz',
     ],
     entry_points={},
     classifiers=[
