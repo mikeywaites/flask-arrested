@@ -18,7 +18,7 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 
 def read(path):
