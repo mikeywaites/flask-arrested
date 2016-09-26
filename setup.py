@@ -62,7 +62,7 @@ setup(
         ]
     },
     dependency_links=[
-        'https://github.com/mikeywaites/kim/archive/kim2-1.0.0-rc5.tar.gz',
+        'https://github.com/mikeywaites/kim/archive/kim2-1.0.0-rc5.tar.gz#egg=py-kim-1.0.0-rc5',
     ],
     entry_points={},
     classifiers=[
