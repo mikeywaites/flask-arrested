@@ -1,0 +1,8 @@
+test:
+  build: .
+  command: py.test -s --tb=short tests/
+  dockerfile: Dockerfile
+  volumes:
+    - .:/opt/code
+  tty: true
+  stdin_open: true

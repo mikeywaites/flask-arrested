@@ -1,0 +1,6 @@
+pytest
+sphinx
+pytest-cov
+ipdb
+flask_sqlalchemy
+py-kim

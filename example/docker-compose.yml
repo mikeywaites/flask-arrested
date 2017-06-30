@@ -1,0 +1,13 @@
+version: "3"
+services:
+  api:
+    build:
+      context: ../
+      dockerfile: example/Dockerfile
+    ports:
+      - "5000:5000"
+    stdin_open: true
+    tty: true
+    volumes:
+      - ..:/opt/code
+
