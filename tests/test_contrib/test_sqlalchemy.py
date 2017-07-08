@@ -1,137 +1,103 @@
 import json
 import pytest
-import datetime
+
+from unittest.mock import patch, Mock
+from flask_sqlalchemy import SQLAlchemy
 
 from flask import url_for
-from kim import Mapper, field
-from kim.mapper import _MapperConfig
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.exceptions import NotFound
 
-from arrested import Resource, ArrestedAPI
 from arrested.contrib.sqa import (
+    DBMixin,
     DBListMixin,
     DBCreateMixin,
     DBObjectMixin,
     DBUpdateMixin
 )
-from arrested.contrib.kim import KimEndpoint
 
 
-db = SQLAlchemy()
+def test_get_db_session(app):
 
-class Character(db.Model):
-
-    __tablename__ = 'character'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    db = SQLAlchemy(app)
+    assert DBMixin().get_db_session() == db.session
 
 
-class CharacterMapper(Mapper):
+def test_db_list_mixin_requires_get_query(app):
 
-    __type__ = Character
-
-    id = field.Integer(read_only=True)
-    name = field.String()
-    created_at = field.DateTime(read_only=True)
+    mixin = DBListMixin()
+    with pytest.raises(NotImplementedError):
+        mixin.get_query()
 
 
-@pytest.yield_fixture()
-def alchemy_api(request, app):
-
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////opt/code/tests/tests.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    db.init_app(app)
-
-    class CharactersEndpoint(KimEndpoint, DBListMixin, DBCreateMixin):
-
-        name = 'list'
-        many = True
-        mapper_class = CharacterMapper
-
-        def get_query(self):
-
-            return db.session.query(Character)
+def test_db_list_mixin_get_objects(app):
 
 
-    class CharacterObjectEndpoint(KimEndpoint, DBObjectMixin, DBUpdateMixin):
-
-        name = 'object'
-        url = '/<string:obj_id>'
-        mapper_class = CharacterMapper
-
-        def get_query(self):
-
-            return db.session.query(Character)
-
-    characters_resource = Resource('characters', __name__, url_prefix='/characters')
-    characters_resource.add_endpoint(CharactersEndpoint)
-    characters_resource.add_endpoint(CharacterObjectEndpoint)
-
-    api_v1 = ArrestedAPI(app, url_prefix='/v1')
-    api_v1.register_resource(characters_resource)
-
-    db.create_all()
-    yield
-    db.session.remove()
-    db.drop_all()
+    with patch.object(DBListMixin, 'get_query') as query_mock:
+        query_mock.return_value.all.return_value = ['foo', 'bar']
+        res = DBListMixin().get_objects()
+        assert res == ['foo', 'bar']
 
 
-def test_get_list(alchemy_api, client):
-    """Functional test ensuring that DBListMixin retuns the expected response."""
+def test_db_list_mixin_get_result(app):
 
-    luke = Character(name='Luke Skywalker')
-    db.session.add(luke)
-    db.session.commit()
+    query_mock = Mock()
+    query_mock.return_value.all.return_value = ['foo', 'bar']
 
-    resp = client.get(url_for('characters.list'))
-
-    assert resp.status_code == 200
-    exp = {
-        'payload': [
-            CharacterMapper(obj=luke).serialize()
-        ]
-    }
-    assert json.loads(resp.data) == exp
+    res = DBListMixin().get_result(query_mock.return_value)
+    assert res == ['foo', 'bar']
+    query_mock.return_value.all.assert_called_once()
 
 
-def test_get_object(alchemy_api, client):
-    """Functional test ensuring that DBObjectMixin retuns the expected response."""
+def test_db_create_mixin_save_object(app):
 
-    luke = Character(name='Luke Skywalker')
-    db.session.add(luke)
-    db.session.commit()
+    session_mock = Mock()
+    fake = Mock()
 
-    resp = client.get(url_for('characters.object', obj_id=luke.id))
+    with patch.object(
+        DBCreateMixin, 'get_db_session', return_value=session_mock) as get_session_mock:
 
-    assert resp.status_code == 200
-    exp = {
-        'payload': CharacterMapper(obj=luke).serialize()
-    }
-    assert json.loads(resp.data) == exp
+        DBCreateMixin().save_object(fake)
+
+        get_session_mock.assert_called_once()
+
+        session_mock.add.assert_called_once_with(fake)
+        session_mock.commit.assert_called_once()
 
 
-def test_create_object(alchemy_api, client):
-    """Functional test ensuring that DBCreateMixin saves our new instance and returns
-    the expected reponse"""
+def test_db_object_mixin_get_object(app):
 
-    luke = Character(name='Luke Skywalker')
-    db.session.add(luke)
-    db.session.commit()
+    mixin = DBObjectMixin()
+    mixin.kwargs = {'obj_id': 1}  # Simulate kwargs being set by an Endpoint class.
+    query_mock = patch.object(DBObjectMixin, 'get_query')
+    mock_query = query_mock.start()
+    mock_query.return_value.filter_by.return_value.one_or_none.return_value = 'foo'
 
-    data = {'name': 'Obe Wan'}
-    resp = client.post(
-        url_for('characters.list'),
-        data=json.dumps(data),
-        content_type='application/json'
-    )
+    res = mixin.get_object()
 
-    assert resp.status_code == 201
-    resp_data = json.loads(resp.data)
-    new_obj = Character.query.get(resp_data['payload']['id'])
-    assert new_obj.id is not None
-    assert new_obj.name == 'Obe Wan'
-    exp = {'payload': CharacterMapper(obj=new_obj).serialize()}
-    assert resp_data == exp
+    assert res == 'foo'
+
+    query_mock.stop()
+
+
+def test_db_object_mixin_get_result(app):
+
+    mock_query = Mock()
+    mock_query.return_value.one_or_none.return_value = 'foo'
+    mixin = DBObjectMixin()
+    mixin.kwargs = {'obj_id': 1}  # Simulate kwargs being set by an Endpoint class.
+
+    res = mixin.get_result(mock_query.return_value)
+
+    assert res == 'foo'
+    mock_query.return_value.one_or_none.assert_called_once()
+
+
+def test_db_object_mixin_filter_by_id(app):
+
+    mock_query = Mock()
+    mixin = DBObjectMixin()
+    mixin.kwargs = {'obj_id': 1}  # Simulate kwargs being set by an Endpoint class.
+
+    mixin.filter_by_id(mock_query.return_value)
+
+    params = {mixin.model_id_param: 1}
+    mock_query.return_value.filter_by.assert_called_once_with(**params)

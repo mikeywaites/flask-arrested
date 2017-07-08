@@ -1,6 +1,6 @@
 test:
   build: .
-  command: py.test -s --tb=short tests/
+  command: py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
   dockerfile: Dockerfile
   volumes:
     - .:/opt/code

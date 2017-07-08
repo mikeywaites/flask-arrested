@@ -7,6 +7,12 @@ from arrested import ArrestedAPI
 @pytest.yield_fixture
 def app():
     app = Flask(__name__)
+    app.config['TESTING'] = True
+
+    # SQLAlchemy settings are only added to stop warnings on app initialization.
+    # Unit test suite doen't actually touch the database.
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////opt/code/tests/tests.db'
     with app.test_request_context():
         yield app
 

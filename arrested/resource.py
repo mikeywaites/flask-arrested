@@ -63,9 +63,10 @@ class Resource(Blueprint):
 
         """
 
-        super(Resource, self).__init__(name, import_name, *args, **kwargs)
         self.before_all_hooks = before_all_hooks or []
         self.after_all_hooks = after_all_hooks or []
+
+        super(Resource, self).__init__(name, import_name, *args, **kwargs)
         if api is not None:
             self.init_api(api)
 
