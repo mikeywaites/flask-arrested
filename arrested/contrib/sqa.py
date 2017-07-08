@@ -102,6 +102,9 @@ class DBListMixin(GetListMixin, DBMixin):
 
 
 class DBCreateMixin(CreateMixin, DBMixin):
+    """SQLAlchemy Create mixin that automatically adds new obejcts to a session object
+    and commits.
+    """
 
     def save_object(self, obj):
         """Takes a marshalled object and attempts to save it to the database using

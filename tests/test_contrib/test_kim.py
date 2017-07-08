@@ -3,7 +3,7 @@ import pytest
 from flask import request as flask_request
 from kim import Mapper, field
 
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, UnprocessableEntity
 from unittest.mock import MagicMock, patch, PropertyMock
 
 from arrested.contrib.kim import (
@@ -164,7 +164,7 @@ def test_kim_request_handler_with_errors():
     endpoint = CharactersEndpoint()
     handler = KimRequestHandler(endpoint, mapper_class=MyMapper, many=True)
 
-    with pytest.raises(BadRequest):
+    with pytest.raises(UnprocessableEntity):
 
         handler.handle(data)
 
@@ -177,10 +177,24 @@ def test_kim_request_handler_with_errors_resp():
 
     try:
         handler.handle(data)
-        assert False, 'Did not raise BadRequest'
+        assert False, 'Did not raise UnprocessableEntity'
+    except UnprocessableEntity as resp:
+        assert resp.response.data == \
+            b'{"message": "Invalid or incomplete data provided.", "errors": {"name": "This is a required field"}}'
+
+
+def test_kim_request_handler_with_custom_error_status():
+
+    data = [{'id': 1}, {'name': 'test 2'}]
+    endpoint = CharactersEndpoint()
+    handler = KimRequestHandler(endpoint, mapper_class=MyMapper, many=True)
+
+    try:
+        handler.handle(data, error_status=400)
+        assert False, 'Did not raise UnprocessableEntity'
     except BadRequest as resp:
         assert resp.response.data == \
-            b'{"message": "Bad Request", "errors": {"name": "This is a required field"}}'
+            b'{"message": "Invalid or incomplete data provided.", "errors": {"name": "This is a required field"}}'
 
 
 def test_kim_endpoint_is_marshal_request_false(app):

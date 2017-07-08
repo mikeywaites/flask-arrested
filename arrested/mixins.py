@@ -148,38 +148,21 @@ class GetObjectMixin(HTTPMixin, ObjectMixin):
     def get_request_response(self, status=200):
         """Pull the processed data from the response_handler and return a response.
 
-        :param status: The HTTP status code returned with the response
-
-        .. seealso:
-            :meth:`ObjectMixin.object_response`
-            :meth:`Endpoint.handle_get_request`
-        """
-
-        return self.object_response(status=status)
-
-    def handle_get_request(self):
-        """Handle incoming GET request to an Endpoint and return a
-        single object calling :meth:`.GetListMixin.get_object`.
-
-        By default a :class:`werkzeug.exceptions.NotFound` HTTP response will be raised
-        when :meth:`GetObjectMixin.get_object` returns None.  This can be disabled
-        by setting the allow_none attribute to True.
-
-        .. code-block:: python
-
-            class MyObjectEndpoint(Endpoint, GetObjectMixin):
-
-                allow_none = True
-
-        :raises: :class:`werkzeug.exceptions.NotFound`
-
-        .. seealso::
-            :meth:`GetListMixin.get_object`
             :meth:`Endpoint.get`
             :meth:`Endpoint.return_error`
         """
 
         return self.get_request_response()
+
+    def handle_get_request(self):
+        """Handle incoming GET request to an Endpoint and return a
+        single object by calling :meth:`.GetListMixin.get_object`.
+
+        .. seealso::
+            :meth:`GetListMixin.get_objects`
+            :meth:`Endpoint.get`
+        """
+        return self.object_response()
 
 
 class PutObjectMixin(HTTPMixin, ObjectMixin):
