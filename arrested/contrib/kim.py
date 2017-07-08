@@ -118,7 +118,7 @@ class KimRequestHandler(KimHandler, RequestHandler):
                 )
     """
 
-    def handle(self, data, **kwargs):
+    def handle(self, data, error_status=422, **kwargs):
         """Run marshalling for the specified mapper_class.
 
         * TODO(mike) Allows users to control the error reponse generated.
@@ -128,7 +128,7 @@ class KimRequestHandler(KimHandler, RequestHandler):
 
         :param data: Data to be marshaled.
         :returns: Marshaled object according to mapper configuration
-        :raises: :class:`werkzeug.exceptions.BadRequest`
+        :raises: :class:`werkzeug.exceptions.UnprocessableEntity`
         """
         try:
             if self.many:
@@ -142,10 +142,10 @@ class KimRequestHandler(KimHandler, RequestHandler):
                 ).marshal(role=self.role)
         except MappingInvalid as e:
             payload = {
-                "message": "Bad Request",
+                "message": "Invalid or incomplete data provided.",
                 "errors": e.errors
             }
-            self.endpoint.return_error(400, payload=payload)
+            self.endpoint.return_error(error_status, payload=payload)
 
 
 class KimEndpoint(Endpoint):
