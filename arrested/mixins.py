@@ -145,15 +145,6 @@ class GetObjectMixin(HTTPMixin, ObjectMixin):
     """Base GetObjectMixins class that defines the expected API for all GetObjectMixins
     """
 
-    def get_request_response(self, status=200):
-        """Pull the processed data from the response_handler and return a response.
-
-            :meth:`Endpoint.get`
-            :meth:`Endpoint.return_error`
-        """
-
-        return self.get_request_response()
-
     def handle_get_request(self):
         """Handle incoming GET request to an Endpoint and return a
         single object by calling :meth:`.GetListMixin.get_object`.
@@ -207,10 +198,28 @@ class PatchObjectMixin(object):
         pass
 
 
-class DeleteObjectMixin(object):
+class DeleteObjectMixin(HTTPMixin, ObjectMixin):
     """Base DeletehObjecttMixin class that defines the expected API for
     all DeletehObjecttMixins.
     """
 
+    def delete_request_response(self, status=204):
+        """Pull the processed data from the response_handler and return a response.
+
+        :param status: The HTTP status code returned with the response
+
+        """
+        return (self.make_response('', status=status))
+
     def handle_delete_request(self):
-        pass
+        """
+        """
+        self.delete_object(self.obj)
+        return self.delete_request_response()
+
+    def delete_object(self, obj):
+        """Called by :meth:`DeleteObjectMixin.handle_delete_request`.
+
+        :param obj: The marhsaled object being deleted.
+        """
+        return obj

@@ -41,9 +41,22 @@ class DBMixin(object):
         raise NotImplementedError('DBListMixin must implement the get_query method.')
 
     def get_db_session(self):
-        """
+        """Returns the session configured against the Flask appliction instance.
         """
         return app.extensions['sqlalchemy'].db.session
+
+    def save(self, obj):
+        """Add ``obj`` to the SQLAlchemy session and commit the changes back to
+        the database.
+
+        :param obj: SQLAlchemy object being saved
+        :returns: The saved object
+        """
+        session = self.get_db_session()
+        session.add(obj)
+        session.commit()
+
+        return obj
 
 
 class DBListMixin(GetListMixin, DBMixin):
@@ -110,9 +123,7 @@ class DBCreateMixin(CreateMixin, DBMixin):
         """Takes a marshalled object and attempts to save it to the database using
         a SQlAlchemy session.
         """
-        session = self.get_db_session()
-        session.add(obj)
-        session.commit()
+        self.save(obj)
 
 
 class DBObjectMixin(GetObjectMixin, DBMixin):
@@ -185,9 +196,30 @@ class DBObjectMixin(GetObjectMixin, DBMixin):
         return self.get_result(query)
 
 
-class DBUpdateMixin(PutObjectMixin, PatchObjectMixin, DBMixin):
-    pass
+class DBUpdateMixin(DBObjectMixin, PutObjectMixin, PatchObjectMixin):
+    """DBUpdateMixin implements the :class:`arrested.mixins.PutObjectMixin` interface
+    that automatically commits changes to objects back to the database.
+    """
+
+    def update_object(self, obj):
+        """Commits changes to an instance back to the database by
+        calling :meth:`.DBMixin.save` on the provided object.
+        """
+        return self.save(obj)
 
 
-class DBDeleteMixin(DeleteObjectMixin, DBMixin):
-    pass
+class DBDeleteMixin(DBObjectMixin, DeleteObjectMixin):
+    """Simple mixin Implementing the DeleteMixin Interface providing automatic removal
+    of objects from a database using SQLAlchemy.
+    """
+
+    def delete_object(self, obj):
+        """Deletes an object from the session by calling session.delete and then commits
+        the changes to the database.
+
+        :param obj: The SQLAlchemy instance being deleted
+        :returns: None
+        """
+        session = self.get_db_session()
+        session.delete(obj)
+        session.commit()

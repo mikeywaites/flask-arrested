@@ -11,6 +11,13 @@ from unittest import mock
 from tests.endpoints import CharactersEndpoint, CharacterEndpoint
 
 
+GET = pytest.mark.GET
+POST = pytest.mark.POST
+GET_OBJ = pytest.mark.GET_OBJ
+PUT = pytest.mark.PUT
+DELETE = pytest.mark.DELETE
+
+
 class GetListEndpoint(CharactersEndpoint):
 
     pass
@@ -261,3 +268,149 @@ def test_object_mixin_obj_property_sets_obj():
         endpoint = MyEndpoint()
         endpoint.obj
         assert endpoint._obj == {'foo': 'bar'}
+
+
+@PUT
+def test_PUT_calls_handle_put_request(app):
+
+    class MyEndpoint(CharacterEndpoint):
+
+        def get_object(self):
+
+            obj = {'foo': 'bar'}
+            return obj
+
+    with mock.patch.object(MyEndpoint, 'handle_put_request') as mock_handle_meth:
+        endpoint = MyEndpoint()
+        endpoint.put()
+        mock_handle_meth.assert_called_once()
+
+
+@PUT
+def test_handle_PUT_request_calls_get_object(app):
+
+    class MyEndpoint(CharacterEndpoint):
+
+        def get_object(self):
+
+            obj = {'foo': 'bar'}
+            return obj
+
+    with mock.patch.object(MyEndpoint, 'get_object', return_value={'foo': 'bar'}) as mock_get_object:
+        endpoint = MyEndpoint()
+        endpoint.put()
+        mock_get_object.assert_called_once()
+
+
+@PUT
+def test_PUT_mixin_sets_request_handler(app):
+
+    class MockRequstHandler(RequestHandler):
+
+        def handle(self, data, **kwargs):
+            return {'mock': True}
+
+    class MyEndpoint(CharacterEndpoint):
+
+        request_handler = MockRequstHandler
+
+    endpoint = MyEndpoint()
+    endpoint.put()
+
+    assert isinstance(endpoint.request, MockRequstHandler)
+
+
+@PUT
+def test_handle_PUT_request_calls_update_object(app):
+
+    class MyEndpoint(CharacterEndpoint):
+
+        def get_object(self):
+
+            obj = {'foo': 'bar'}
+            return obj
+
+    with mock.patch.object(MyEndpoint, 'update_object') as mock_update_object:
+        endpoint = MyEndpoint()
+        endpoint.put()
+        mock_update_object.assert_called_once()
+
+
+@PUT
+def test_PUT_request_response(app):
+
+    class MyEndpoint(CharacterEndpoint):
+
+        def get_object(self):
+
+            obj = {'foo': 'bar'}
+            return obj
+
+    endpoint = MyEndpoint()
+    resp = endpoint.put()
+    assert resp.status_code == 200
+    assert resp.data == b'{"payload": {"foo": "bar"}}'
+
+
+@DELETE
+def test_DELETE_calls_handle_delete_request(app):
+
+    class MyEndpoint(CharacterEndpoint):
+
+        def get_object(self):
+
+            obj = {'foo': 'bar'}
+            return obj
+
+    with mock.patch.object(MyEndpoint, 'handle_delete_request') as mock_handle_meth:
+        endpoint = MyEndpoint()
+        endpoint.delete()
+        mock_handle_meth.assert_called_once()
+
+
+@DELETE
+def test_handle_DELETE_request_calls_get_object(app):
+
+    class MyEndpoint(CharacterEndpoint):
+
+        def get_object(self):
+
+            obj = {'foo': 'bar'}
+            return obj
+
+    with mock.patch.object(MyEndpoint, 'get_object') as mock_get_object:
+        endpoint = MyEndpoint()
+        endpoint.delete()
+        mock_get_object.assert_called_once()
+
+
+@DELETE
+def test_handle_DELETE_request_calls_delete_object(app):
+
+    class MyEndpoint(CharacterEndpoint):
+
+        def get_object(self):
+
+            obj = {'foo': 'bar'}
+            return obj
+
+    with mock.patch.object(MyEndpoint, 'delete_object') as mock_delete_object:
+        endpoint = MyEndpoint()
+        endpoint.delete()
+        mock_delete_object.assert_called_once_with({'foo': 'bar'})
+
+
+@DELETE
+def test_handle_DELETE_request_response(app):
+
+    class MyEndpoint(CharacterEndpoint):
+
+        def get_object(self):
+
+            obj = {'foo': 'bar'}
+            return obj
+
+    endpoint = MyEndpoint()
+    resp = endpoint.delete()
+    assert resp.status_code == 204
+    assert resp.data == b''

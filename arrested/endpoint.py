@@ -180,4 +180,4 @@ class Endpoint(MethodView):
     def delete(self, *args, **kwargs):
         """Handle Incoming DELETE requests and dispatch to handle_delete_request method.
         """
-        pass
+        return self.handle_delete_request()

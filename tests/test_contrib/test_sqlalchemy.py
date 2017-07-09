@@ -11,7 +11,8 @@ from arrested.contrib.sqa import (
     DBListMixin,
     DBCreateMixin,
     DBObjectMixin,
-    DBUpdateMixin
+    DBUpdateMixin,
+    DBDeleteMixin
 )
 
 
@@ -101,3 +102,35 @@ def test_db_object_mixin_filter_by_id(app):
 
     params = {mixin.model_id_param: 1}
     mock_query.return_value.filter_by.assert_called_once_with(**params)
+
+
+def test_db_update_mixin_update_object(app):
+
+    session_mock = Mock()
+    fake = Mock()
+
+    with patch.object(
+        DBUpdateMixin, 'get_db_session', return_value=session_mock) as get_session_mock:
+
+        DBUpdateMixin().update_object(fake)
+
+        get_session_mock.assert_called_once()
+
+        session_mock.add.assert_called_once_with(fake)
+        session_mock.commit.assert_called_once()
+
+
+def test_db_delete_mixin_delete_object(app):
+
+    session_mock = Mock()
+    fake = Mock()
+
+    with patch.object(
+        DBDeleteMixin, 'get_db_session', return_value=session_mock) as get_session_mock:
+
+        DBDeleteMixin().delete_object(fake)
+
+        get_session_mock.assert_called_once()
+
+        session_mock.delete.assert_called_once_with(fake)
+        session_mock.commit.assert_called_once()
