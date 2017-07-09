@@ -6,13 +6,12 @@ from flask_sqlalchemy import SQLAlchemy
 
 from flask import url_for
 
+from arrested import Endpoint
 from arrested.contrib.sqa import (
     DBMixin,
     DBListMixin,
     DBCreateMixin,
-    DBObjectMixin,
-    DBUpdateMixin,
-    DBDeleteMixin
+    DBObjectMixin
 )
 
 
@@ -110,9 +109,9 @@ def test_db_update_mixin_update_object(app):
     fake = Mock()
 
     with patch.object(
-        DBUpdateMixin, 'get_db_session', return_value=session_mock) as get_session_mock:
+        DBObjectMixin, 'get_db_session', return_value=session_mock) as get_session_mock:
 
-        DBUpdateMixin().update_object(fake)
+        DBObjectMixin().update_object(fake)
 
         get_session_mock.assert_called_once()
 
@@ -126,11 +125,21 @@ def test_db_delete_mixin_delete_object(app):
     fake = Mock()
 
     with patch.object(
-        DBDeleteMixin, 'get_db_session', return_value=session_mock) as get_session_mock:
+        DBObjectMixin, 'get_db_session', return_value=session_mock) as get_session_mock:
 
-        DBDeleteMixin().delete_object(fake)
+        DBObjectMixin().delete_object(fake)
 
         get_session_mock.assert_called_once()
 
         session_mock.delete.assert_called_once_with(fake)
         session_mock.commit.assert_called_once()
+
+
+def test_db_mixins_mro(app):
+
+    class IndexApi(Endpoint, DBListMixin, DBCreateMixin):
+        pass
+
+
+    class ObjectApi(Endpoint, DBObjectMixin):
+        pass

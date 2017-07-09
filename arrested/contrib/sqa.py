@@ -126,7 +126,11 @@ class DBCreateMixin(CreateMixin, DBMixin):
         self.save(obj)
 
 
-class DBObjectMixin(GetObjectMixin, DBMixin):
+class DBObjectMixin(GetObjectMixin,
+                    PutObjectMixin,
+                    PatchObjectMixin,
+                    DeleteObjectMixin,
+                    DBMixin):
     """SQLAlchemy powered object mixin that queries a database to retun a single object
     typically by primary key for a given endpoint.
 
@@ -195,23 +199,11 @@ class DBObjectMixin(GetObjectMixin, DBMixin):
         query = self.filter_by_id(query)
         return self.get_result(query)
 
-
-class DBUpdateMixin(DBObjectMixin, PutObjectMixin, PatchObjectMixin):
-    """DBUpdateMixin implements the :class:`arrested.mixins.PutObjectMixin` interface
-    that automatically commits changes to objects back to the database.
-    """
-
     def update_object(self, obj):
         """Commits changes to an instance back to the database by
         calling :meth:`.DBMixin.save` on the provided object.
         """
         return self.save(obj)
-
-
-class DBDeleteMixin(DBObjectMixin, DeleteObjectMixin):
-    """Simple mixin Implementing the DeleteMixin Interface providing automatic removal
-    of objects from a database using SQLAlchemy.
-    """
 
     def delete_object(self, obj):
         """Deletes an object from the session by calling session.delete and then commits

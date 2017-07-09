@@ -8,7 +8,6 @@ from arrested.contrib.sqa import (
     DBListMixin,
     DBCreateMixin,
     DBObjectMixin,
-    DBUpdateMixin
 )
 from arrested.contrib.kim import KimEndpoint
 
@@ -41,7 +40,7 @@ class CharactersEndpoint(KimEndpoint, DBListMixin, DBCreateMixin):
         return db.session.query(Character)
 
 
-class CharacterObjectEndpoint(KimEndpoint, DBObjectMixin, DBUpdateMixin):
+class CharacterObjectEndpoint(KimEndpoint, DBObjectMixin):
 
     name = 'object'
     url = '/<string:obj_id>'
