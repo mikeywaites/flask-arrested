@@ -175,10 +175,11 @@ class PutObjectMixin(HTTPMixin, ObjectMixin):
     def handle_put_request(self):
         """
         """
+        obj = self.obj
         self.request = self.get_request_handler()
-        self.obj = self.request.process().data
+        self.request.process()
 
-        self.update_object(self.obj)
+        self.update_object(obj)
         return self.put_request_response()
 
     def update_object(self, obj):

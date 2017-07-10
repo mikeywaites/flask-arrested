@@ -32,6 +32,7 @@ class KimHandler(Handler):
         self.role = params.pop('role', '__default__')
         self.many = params.pop('many', False)
         self.raw = params.pop('raw', False)
+        self.obj = params.pop('obj', None)
 
     @property
     def mapper(self):
@@ -138,6 +139,7 @@ class KimRequestHandler(KimHandler, RequestHandler):
             else:
                 return self.mapper(
                     data=data,
+                    obj=self.obj,
                     **self.mapper_kwargs
                 ).marshal(role=self.role)
         except MappingInvalid as e:
