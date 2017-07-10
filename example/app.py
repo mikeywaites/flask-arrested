@@ -18,6 +18,7 @@ from example.mappers import CharacterMapper
 app = Flask(__name__)
 api_v1 = ArrestedAPI(app, url_prefix='/v1')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////opt/code/example/starwars.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 characters_resource = Resource('characters', __name__, url_prefix='/characters')

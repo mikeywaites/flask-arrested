@@ -1,8 +1,31 @@
-test:
-  build: .
-  command: py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
-  dockerfile: Dockerfile
-  volumes:
-    - .:/opt/code
-  tty: true
-  stdin_open: true
+version: "3"
+
+services:
+
+  unit_tests:
+    build: .
+    command: py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
+    volumes:
+      - .:/opt/code
+    tty: true
+    stdin_open: true
+
+  api:
+    build:
+      context: example/
+    ports:
+      - "5000:5000"
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/opt/code
+
+  e2e_tests:
+    build: .
+    command: behave tests/e2e_tests/features
+    volumes:
+      - .:/opt/code
+    environment:
+      - SERVER_URL=http://api:5000
+    tty: true
+    stdin_open: true
