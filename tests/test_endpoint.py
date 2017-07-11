@@ -4,7 +4,10 @@ from unittest import mock
 
 from flask import Response
 from werkzeug.exceptions import HTTPException
-from arrested import Endpoint, ResponseHandler, GetListMixin, CreateMixin, PutObjectMixin
+from arrested import (
+    Endpoint, ResponseHandler, GetListMixin,
+    CreateMixin, PutObjectMixin, PatchObjectMixin
+)
 
 from tests.utils import assertResponse
 
@@ -287,7 +290,57 @@ def test_after_put_hooks(app):
 
 
 def test_patch_calls_handle_patch_request():
-    pass
+    class MyEndpoint(Endpoint):
+
+        def handle_patch_request(self):
+            pass
+
+    data = {'foo': 'bar'}
+    with mock.patch.object(MyEndpoint, 'handle_patch_request', return_value=data) as _mock:
+        MyEndpoint().patch()
+        _mock.assert_called_once()
+
+
+def test_before_patch_hooks(app):
+
+    log_request = mock.MagicMock(return_value=None)
+
+    class MyEndpoint(Endpoint, PatchObjectMixin):
+
+        before_patch_hooks = [log_request, ]
+
+        def get_object(self):
+
+            return {'foo': 'bar'}
+
+        def patch_object(self, obj):
+            return obj
+
+    with app.test_request_context('/test', method='PATCH'):
+        MyEndpoint().dispatch_request()
+        log_request.assert_called_once()
+
+
+def test_after_patch_hooks(app):
+
+    def set_headers(endpoint, response):
+        response.headers.add('X-Test', 1)
+        return response
+
+    class MyEndpoint(Endpoint, PatchObjectMixin):
+
+        after_patch_hooks = [set_headers]
+
+        def get_object(self):
+
+            return {'foo': 'bar'}
+
+        def patch_object(self, obj):
+            return obj
+
+    with app.test_request_context('/test', method='PATCH'):
+        resp = MyEndpoint().dispatch_request()
+        assert 'X-Test' in resp.headers
 
 
 def test_delete_calls_handle_delete_request():

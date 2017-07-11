@@ -6,6 +6,7 @@ from kim import Mapper, field
 from werkzeug.exceptions import BadRequest, UnprocessableEntity
 from unittest.mock import MagicMock, patch, PropertyMock
 
+from arrested import PutObjectMixin, PatchObjectMixin
 from arrested.contrib.kim import (
     KimHandler, KimResponseHandler,
     KimRequestHandler,
@@ -246,7 +247,56 @@ def test_kim_endpoint_get_request_handler_params(app):
             'mapper_class': MyMapper,
             'many': False,
             'role': 'test',
-            'obj': None
+            'obj': None,
+            'partial': False,
+        }
+        assert params == exp
+
+
+def test_kim_endpoint_get_request_handler_params_update_existing(app):
+
+    class MyEndpoint(KimEndpoint, PutObjectMixin):
+        mapper_class = MyMapper
+        many = True
+        marshal_role = 'test'
+
+        def get_object(self):
+
+            return {'foo': 'bar'}
+
+    with app.test_request_context('/test', method="PUT"):
+        endpoint = MyEndpoint()
+        params = endpoint.get_request_handler_params()
+        exp = {
+            'mapper_class': MyMapper,
+            'many': False,
+            'role': 'test',
+            'obj': {'foo': 'bar'},
+            'partial': False,
+        }
+        assert params == exp
+
+
+def test_kim_endpoint_get_request_handler_partial_update(app):
+
+    class MyEndpoint(KimEndpoint, PatchObjectMixin):
+        mapper_class = MyMapper
+        many = True
+        marshal_role = 'test'
+
+        def get_object(self):
+
+            return {'foo': 'bar'}
+
+    with app.test_request_context('/test', method="PATCH"):
+        endpoint = MyEndpoint()
+        params = endpoint.get_request_handler_params()
+        exp = {
+            'mapper_class': MyMapper,
+            'many': False,
+            'role': 'test',
+            'obj': {'foo': 'bar'},
+            'partial': True,
         }
         assert params == exp
 

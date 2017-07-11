@@ -314,6 +314,11 @@ def test_PUT_mixin_sets_request_handler(app):
 
         request_handler = MockRequstHandler
 
+        def get_object(self):
+
+            obj = {'foo': 'bar'}
+            return obj
+
     endpoint = MyEndpoint()
     endpoint.put()
 

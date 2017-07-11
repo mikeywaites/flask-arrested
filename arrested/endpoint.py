@@ -175,7 +175,7 @@ class Endpoint(MethodView):
     def patch(self, *args, **kwargs):
         """Handle Incoming PATCH requests and dispatch to handle_patch_request method.
         """
-        pass
+        return self.handle_patch_request()
 
     def delete(self, *args, **kwargs):
         """Handle Incoming DELETE requests and dispatch to handle_delete_request method.

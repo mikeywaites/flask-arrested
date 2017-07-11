@@ -33,6 +33,7 @@ class KimHandler(Handler):
         self.many = params.pop('many', False)
         self.raw = params.pop('raw', False)
         self.obj = params.pop('obj', None)
+        self.partial = params.pop('partial', False)
 
     @property
     def mapper(self):
@@ -140,6 +141,7 @@ class KimRequestHandler(KimHandler, RequestHandler):
                 return self.mapper(
                     data=data,
                     obj=self.obj,
+                    partial=self.partial,
                     **self.mapper_kwargs
                 ).marshal(role=self.role)
         except MappingInvalid as e:
@@ -166,6 +168,11 @@ class KimEndpoint(Endpoint):
         """Return a boolean indicating wether the request is a POST PATCH or PUT request
         """
         return request.method in ['POST', 'PATCH', 'PUT']
+
+    def is_partial(self):
+        """Return a boolean indicating if this marshal request is providing partial data
+        """
+        return request.method == 'PATCH'
 
     def get_response_handler_params(self, **params):
         """Return a config object that will be used to configure the KimResponseHandler
@@ -204,5 +211,6 @@ class KimEndpoint(Endpoint):
         # when handling a PUT or PATCH request, self.obj will be set.. There might be a
         # more robust way to handle this?
         params['obj'] = getattr(self, 'obj', None)
+        params['partial'] = self.is_partial()
 
         return params

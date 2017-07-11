@@ -39,6 +39,17 @@ Feature: As a User of Arrested
     """
     And the response status should be 200
 
+  Scenario: Test DBObjectMixin PATCH object
+    When I make a PATCH request to "/v1/characters/1"
+    """
+    {"name": "Obe Kenobe"}
+    """
+    Then the JSON should be
+    """
+    {"payload": {"name": "Obe Kenobe", "id": 1, "created_at": "2017-01-01T10:00:00"}}
+    """
+    And the response status should be 200
+
   Scenario: Test DBObjectMixin DELETE object
     When I make a DELETE request to "/v1/characters/1"
     Then the response status should be 204

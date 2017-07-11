@@ -205,6 +205,12 @@ class DBObjectMixin(GetObjectMixin,
         """
         return self.save(obj)
 
+    def patch_object(self, obj):
+        """Commits changes to an instance back to the database by
+        calling :meth:`.DBMixin.save` on the provided object.
+        """
+        return self.save(obj)
+
     def delete_object(self, obj):
         """Deletes an object from the session by calling session.delete and then commits
         the changes to the database.

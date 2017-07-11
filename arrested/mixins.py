@@ -191,12 +191,39 @@ class PutObjectMixin(HTTPMixin, ObjectMixin):
         return obj
 
 
-class PatchObjectMixin(object):
+class PatchObjectMixin(HTTPMixin, ObjectMixin):
     """Base PatchObjectMixin class that defines the expected API for all PatchObjectMixin
     """
 
+    def patch_request_response(self, status=200):
+        """Pull the processed data from the response_handler and return a response.
+
+        :param status: The HTTP status code returned with the response
+
+        .. seealso:
+            :meth:`ObjectMixin.object_response`
+            :meth:`Endpoint.handle_put_request`
+        """
+
+        return self.object_response(status=status)
+
     def handle_patch_request(self):
-        pass
+        """
+        """
+        obj = self.obj
+        self.request = self.get_request_handler()
+        self.request.process()
+
+        self.patch_object(obj)
+        return self.patch_request_response()
+
+    def patch_object(self, obj):
+        """Called by :meth:`PatchObjectMixin.handle_patch_request` ater the
+        incoming data has been marshalled by the RequestHandler.
+
+        :param obj: The marhsaled object from RequestHandler.
+        """
+        return obj
 
 
 class DeleteObjectMixin(HTTPMixin, ObjectMixin):
