@@ -7,12 +7,19 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import url_for
 
 from arrested import Endpoint
+from arrested.exceptions import ArrestedException
 from arrested.contrib.sqa import (
     DBMixin,
     DBListMixin,
     DBCreateMixin,
     DBObjectMixin
 )
+
+
+class Model(object):
+
+    id = 'foo'
+    name = 'foo'
 
 
 def test_get_db_session(app):
@@ -67,9 +74,10 @@ def test_db_object_mixin_get_object(app):
 
     mixin = DBObjectMixin()
     mixin.kwargs = {'obj_id': 1}  # Simulate kwargs being set by an Endpoint class.
+    mixin.model = Model
     query_mock = patch.object(DBObjectMixin, 'get_query')
     mock_query = query_mock.start()
-    mock_query.return_value.filter_by.return_value.one_or_none.return_value = 'foo'
+    mock_query.return_value.filter.return_value.one_or_none.return_value = 'foo'
 
     res = mixin.get_object()
 
@@ -91,16 +99,40 @@ def test_db_object_mixin_get_result(app):
     mock_query.return_value.one_or_none.assert_called_once()
 
 
-def test_db_object_mixin_filter_by_id(app):
+def test_db_object_mixin_filter_by_id_model_must_be_set(app):
 
     mock_query = Mock()
     mixin = DBObjectMixin()
     mixin.kwargs = {'obj_id': 1}  # Simulate kwargs being set by an Endpoint class.
 
+    with pytest.raises(ArrestedException):
+        mixin.filter_by_id(mock_query.return_value)
+
+
+def test_db_object_mixin_filter_by_id_invalid_id_field(app):
+
+    mock_query = Mock()
+    mixin = DBObjectMixin()
+    mixin.model = Model
+    mixin.model_id_param = 'bar'
+    mixin.kwargs = {'obj_id': 1}  # Simulate kwargs being set by an Endpoint class.
+
+    with pytest.raises(ArrestedException):
+        mixin.filter_by_id(mock_query.return_value)
+
+
+
+def test_db_object_mixin_filter_by_id(app):
+
+    mock_query = Mock()
+    mixin = DBObjectMixin()
+    mixin.model = Model
+    mixin.kwargs = {'obj_id': 1}  # Simulate kwargs being set by an Endpoint class.
+
     mixin.filter_by_id(mock_query.return_value)
 
-    params = {mixin.model_id_param: 1}
-    mock_query.return_value.filter_by.assert_called_once_with(**params)
+    params = (Model.id == 1)
+    mock_query.return_value.filter.assert_called_once_with(params)
 
 
 def test_db_update_mixin_update_object(app):

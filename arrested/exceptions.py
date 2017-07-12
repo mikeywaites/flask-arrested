@@ -1,0 +1,4 @@
+
+
+class ArrestedException(Exception):
+    pass

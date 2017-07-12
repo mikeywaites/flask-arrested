@@ -1,4 +1,7 @@
 from flask import current_app as app
+
+from arrested.exceptions import ArrestedException
+
 from ..mixins import (
     GetListMixin, CreateMixin, GetObjectMixin,
     PutObjectMixin, PatchObjectMixin,
@@ -38,7 +41,8 @@ class DBMixin(object):
             :meth:`DBObjectMixin.get_object`
             :meth:`DBObjectMixin.get_result`
         """
-        raise NotImplementedError('DBListMixin must implement the get_query method.')
+        name = self.__class__.__name__
+        raise NotImplementedError('%s must implement get_query method.' % name)
 
     def get_db_session(self):
         """Returns the session configured against the Flask appliction instance.
@@ -158,6 +162,7 @@ class DBObjectMixin(GetObjectMixin,
         characters_resource.add_endpoint(CharacterObjectEndpoint)
     """
 
+    model = None
     url_id_param = 'obj_id'
     model_id_param = 'id'
 
@@ -179,8 +184,14 @@ class DBObjectMixin(GetObjectMixin,
         :param query: SQLAlchemy Query
         :returns: A SQLAlchemy Query object
         """
+        if self.model is None:
+            raise ArrestedException('DBObjectMixin requires a model to be set.')
 
-        return query.filter_by(**{self.model_id_param: self.kwargs[self.url_id_param]})
+        idfield = getattr(self.model, self.model_id_param, None)
+        if not idfield:
+            raise ArrestedException('DBObjectMixin could not find a valid Model.id.')
+
+        return query.filter(idfield == self.kwargs[self.url_id_param])
 
     def get_object(self):
         """Implements the GetObjectMixin interface and calls
@@ -195,6 +206,7 @@ class DBObjectMixin(GetObjectMixin,
             :meth:`DBObjectMixin.filter_by_id`
             :meth:`DBObjectMixin.get_result`
         """
+
         query = self.get_query()
         query = self.filter_by_id(query)
         return self.get_result(query)
