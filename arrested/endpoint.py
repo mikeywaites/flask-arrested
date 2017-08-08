@@ -39,6 +39,9 @@ class Endpoint(MethodView):
         self.kwargs = kwargs
         meth = request.method.lower()
 
+        if request.method not in self.methods:
+            self.return_error(405)
+
         resource = current_app.blueprints.get(request.blueprint, None)
         if resource:
             for hook in chain(resource.api.before_all_hooks, resource.before_all_hooks):
@@ -152,10 +155,15 @@ class Endpoint(MethodView):
 
                 return self.return_create_response()
         """
+        resp = None
         if payload is not None:
             payload = json.dumps(payload)
-        resp = self.make_response(payload, status=status)
-        abort(status, response=resp)
+            resp = self.make_response(payload, status=status)
+
+        if status in [405]:
+            abort(status)
+        else:
+            abort(status, response=resp)
 
     def get(self, *args, **kwargs):
         """Handle Incoming GET requests and dispatch to handle_get_request method.
