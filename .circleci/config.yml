@@ -20,19 +20,55 @@ jobs:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
           paths:
             - "venv"
+  test:
+    working_directory: ~/flask-arrested
+    docker:
+      - image: python:3
+    steps:
+      - checkout
       - run:
           command: |
             . venv/bin/activate
             py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
+  release:
+    working_directory: ~/flask-arrested
+    docker:
+      - image: python:3
+    steps:
+      - checkout
       - deploy:
-          filters:
-              branches:
-                only:
-                  - wip/version-0.1.0
-                  - master
           command: |
             pip install twine
             python setup.py sdist
             python setup.py bdist_wheel --universal
             twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
             curl -X POST http://readthedocs.org/build/arrested
+  docs:
+    working_directory: ~/flask-arrested
+    docker:
+      - image: python:3
+    steps:
+      - checkout
+      - deploy:
+          command: |
+            curl -X POST http://readthedocs.org/build/arrested
+
+workflows:
+  version: 2
+    build_test_and_deploy:
+      jobs:
+        - build
+        - test
+          requires:
+            - build
+        - deploy:
+          filters:
+            branches:
+              only:
+                - master
+                - wip/0.1.0
+          requires:
+            - test
+        - docs:
+          requires:
+            - test
