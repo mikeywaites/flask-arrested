@@ -12,7 +12,7 @@ setup(
     url='https://github.com/mikeywaites/flask-arrested',
     description=('A framework for rapidly building REST APIs in Flask.'),
     license='MIT',
-    packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
+    packages=find_packages(exclude=['tests']),
     include_package_data=True,
     install_requires=['flask'],
     zip_safe=False,
