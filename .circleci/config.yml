@@ -5,6 +5,9 @@ jobs:
     working_directory: ~/flask-arrested
     docker:
       - image: python:3
+        environment:
+            PYPI_USERNAME: $PYPI_USERNAME
+            PYPI_PASSWORD: $PYPI_PASSWORD
     branches:
       - wip/version-0.1.0
       - feature/cirlcie-ci
