@@ -55,20 +55,20 @@ jobs:
 
 workflows:
   version: 2
-    build_test_and_deploy:
-      jobs:
-        - build
-        - test
-          requires:
-            - build
-        - deploy:
-          filters:
-            branches:
-              only:
-                - master
-                - wip/0.1.0
-          requires:
-            - test
-        - docs:
-          requires:
-            - test
+  build_test_and_deploy:
+    jobs:
+      - build
+      - test
+        requires:
+          - build
+      - deploy:
+        filters:
+          branches:
+            only:
+              - master
+              - wip/0.1.0
+        requires:
+          - test
+      - docs:
+        requires:
+          - test
