@@ -5,12 +5,6 @@ jobs:
     working_directory: ~/flask-arrested
     docker:
       - image: python:3
-        environment:
-            PYPI_USERNAME: $PYPI_USERNAME
-            PYPI_PASSWORD: $PYPI_PASSWORD
-    branches:
-      - wip/version-0.1.0
-      - feature/cirlcie-ci
     steps:
       - checkout
       - restore_cache:
@@ -31,6 +25,9 @@ jobs:
             . venv/bin/activate
             py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
       - deploy:
+          branches:
+            - wip/version-0.1.0
+            - master
           command: |
             pip install twine
             python setup.py sdist
