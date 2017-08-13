@@ -28,9 +28,7 @@ jobs:
           paths:
             - *
   test:
-    working_directory: ~/flask-arrested
-    docker:
-      - image: python:3
+    <<: *defaults
     - attach_workspace:
         at: ~/flask-arrested/venv
     steps:
@@ -41,9 +39,7 @@ jobs:
             py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
 
   release:
-    working_directory: ~/flask-arrested
-    docker:
-      - image: python:3
+    <<: *defaults
     steps:
       - checkout
       - deploy:
@@ -54,9 +50,7 @@ jobs:
             twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
             curl -X POST http://readthedocs.org/build/arrested
   docs:
-    working_directory: ~/flask-arrested
-    docker:
-      - image: python:3
+    <<: *defaults
     steps:
       - checkout
       - deploy:
