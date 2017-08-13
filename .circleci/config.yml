@@ -25,9 +25,11 @@ jobs:
             . venv/bin/activate
             py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
       - deploy:
-          branches:
-            - wip/version-0.1.0
-            - master
+          filters:
+              branches:
+                only:
+                  - wip/version-0.1.0
+                  - master
           command: |
             pip install twine
             python setup.py sdist
