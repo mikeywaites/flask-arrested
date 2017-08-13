@@ -1,10 +1,13 @@
 version: 2
 
+defaults: &defaults
+  working_directory: ~/flask-arrested
+  docker:
+    - image: python:3
+
 jobs:
   build:
-    working_directory: ~/flask-arrested
-    docker:
-      - image: python:3
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -20,16 +23,23 @@ jobs:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
           paths:
             - "venv"
+      - persist_to_workspace:
+          root: venv
+          paths:
+            - *
   test:
     working_directory: ~/flask-arrested
     docker:
       - image: python:3
+    - attach_workspace:
+        at: ~/flask-arrested/venv
     steps:
       - checkout
       - run:
           command: |
-            . venv/bin/activate
+            . ~/flask-arrested/venv/bin/activate
             py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
+
   release:
     working_directory: ~/flask-arrested
     docker:
