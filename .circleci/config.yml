@@ -23,14 +23,12 @@ jobs:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
           paths:
             - "venv"
-      - persist_to_workspace:
-          root: venv
   test:
     <<: *defaults
-    - attach_workspace:
-        at: ~/flask-arrested/venv
     steps:
       - checkout
+      - restore_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           command: |
             . ~/flask-arrested/venv/bin/activate
