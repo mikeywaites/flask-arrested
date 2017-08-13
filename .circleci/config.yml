@@ -33,8 +33,7 @@ jobs:
       - deploy:
           command: |
             pip install twine
-            sed "s/PYPI_USERNAME/$PYPI_USERNAME/;s/PYPI_PASSWORD/$PYPI_PASSWORD/" < pypirc.template > ~/.pypirc
             python setup.py sdist
             python setup.py bdist_wheel --universal
-            twine upload dist/*
+            twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
             curl -X POST http://readthedocs.org/build/flask-arrested
