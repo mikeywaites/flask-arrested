@@ -1,0 +1,12 @@
+[distutils]
+index-servers =
+    pypi
+    pypitest
+
+[pypi]
+username: PYPI_USERNAME
+password: PYPI_PASSWORD
+
+[pypitest]
+username: PYPI_USERNAME
+password: PYPI_PASSWORD

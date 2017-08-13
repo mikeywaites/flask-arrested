@@ -4,16 +4,15 @@ from distutils.sysconfig import get_python_lib
 
 from setuptools import find_packages, setup
 
-EXCLUDE_FROM_PACKAGES = [
-]
-
 setup(
     name='arrested',
-    version='0.1.0',
-    author='OSLDevs',
+    version='0.1.0-dev2',
+    author='Mikey Waites',
+    author_email='mike@oldstlabs.com',
+    url='https://github.com/mikeywaites/flask-arrested',
     description=('A framework for rapidly building REST APIs in Flask.'),
     license='MIT',
-    packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
+    packages=find_packages(exclude=['tests']),
     include_package_data=True,
     install_requires=['flask'],
     zip_safe=False,
@@ -34,5 +33,5 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: WSGI',
         'Topic :: Software Development :: Libraries :: Application Frameworks',
         'Topic :: Software Development :: Libraries :: Python Modules',
-    ],
+    ]
 )
