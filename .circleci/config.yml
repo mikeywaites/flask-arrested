@@ -27,7 +27,7 @@ jobs:
           . venv/bin/activate
           py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
       - deploy:
-        - command: |
+        command: |
           sudo chown -R ubuntu:ubuntu py_kim.egg-info
           sed "s/PYPI_USERNAME/$PYPI_USERNAME/;s/PYPI_PASSWORD/$PYPI_PASSWORD/" < pypirc.template > ~/.pypirc
           python setup.py register -r pypitest
