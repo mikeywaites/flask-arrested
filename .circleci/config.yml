@@ -25,8 +25,6 @@ jobs:
             - "venv"
       - persist_to_workspace:
           root: venv
-          paths:
-            - *
   test:
     <<: *defaults
     - attach_workspace:
