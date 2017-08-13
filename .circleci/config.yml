@@ -67,7 +67,7 @@ workflows:
             branches:
               only:
                 - master
-                - wip/0.1.0
+                - wip/version-0.1.0
           requires:
             - test
       - docs:
