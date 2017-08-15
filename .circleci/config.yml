@@ -62,7 +62,7 @@ workflows:
       - test:
           requires:
             - build
-      - deploy:
+      - release:
           filters:
             branches:
               only:
