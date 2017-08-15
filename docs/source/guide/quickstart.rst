@@ -27,17 +27,9 @@ You can find the example application `here <https://github.com/oldstlabs/flask-a
 Defining your first API
 -------------------------
 
-Flask-Arrested is split into 3 key concepts.  API's, Resources and Endpoints.  API's contian multiple Resources.  For example
+Flask-Arrested is split into 3 key concepts.  :class:`ArrestedAPI`'s, :class:`Resource` and :class:`Endpoint`.  API's contian multiple Resources.  For example
 Our API will contain a Characters resource, a Planets resource and so on.  Resources are a collection of Endpoints.  Endpoints define
 the urls inside of our Resources ``/v1/charcaters`` ``/v1/planets/hfyf66775gjgjjf`` etc.
-
-Our API will...
-
-* Return a list of all the characters from the DB from the /v1/characters url
-* Return a specifc character from the DB by id from the url /v1/characters/:id
-* Allow users to create a new character when by a POST request to /v1/characters
-* Allow users to update a character by making a PUT request to /v1/characters/:id
-* And finally, allow users to delete a character by making a DELETE request to /v1/characters/:id
 
 .. note::
 
@@ -52,7 +44,6 @@ Our API will...
         DBListMixin,
         DBCreateMixin,
         DBObjectMixin,
-        DBUpdateMixin
     )
     from arrested.contrib.kim_arrested import KimEndpoint
 
@@ -63,11 +54,13 @@ Our API will...
     app = Flask(__name__)
     api_v1 = ArrestedAPI(app, url_prefix='/v1')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////opt/code/example/starwars.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
     characters_resource = Resource('characters', __name__, url_prefix='/characters')
 
-    class CharactersEndpoint(KimEndpoint, DBListMixin, DBCreateMixin):
+
+    class CharactersIndexEndpoint(KimEndpoint, DBListMixin, DBCreateMixin):
 
         name = 'list'
         many = True
@@ -78,16 +71,19 @@ Our API will...
             return db.session.query(Character)
 
 
-    class CharacterObjectEndpoint(KimEndpoint, DBObjectMixin, DBUpdateMixin):
+    class CharacterObjectEndpoint(KimEndpoint, DBObjectMixin):
 
         name = 'object'
+        url = '/<string:obj_id>'
         mapper_class = CharacterMapper
+        model = Character
 
         def get_query(self):
 
             return db.session.query(Character)
 
-    characters_resource.add_endpoint(CharactersEndpoint)
+
+    characters_resource.add_endpoint(CharactersIndexEndpoint)
     characters_resource.add_endpoint(CharacterObjectEndpoint)
     api_v1.register_resource(characters_resource)
 
@@ -98,5 +94,104 @@ Start the Docker container in the example/ directory.
 
     $ docker-compose run --rm --service-ports api
 
-Hit the `http://localhost:5000/v1/characters` url in your browser.  You will see the JSON response
+Hit the ``http://localhost:5000/v1/characters`` url in your browser.  You will see the JSON response
 for the characters endpoint returned.
+
+There's a lot going on here, let's recap.
+
+* We have now got an API that returns a list of serialized character objects via the /v1/characters endpoint.
+* We can create new character objects by making a POST request to /v1/characters
+* We can fetch a character by making a GET request to /v1/characters/1
+* We can update an existing character by making a PUT request to /v1/characters/1
+* We can delete a character by making a DELETE request to /v1/characters/1
+* Our Database objects are being automatically serialzied using the Kim Mapper we defined
+
+All in around 50 lines of code!  Try making some other requests using curl to add new characters or update Obe Wan.
+
+
+Using Middleware
+-------------------
+
+Flask comes with a great system for handling middleware.  Arrested builds on top of this system to allow more fine grained control of where and when your middleware is run
+when requests are being made to your APIs.
+
+Middleware can be applied at each level of the API.  You will often want a peice middleware to be applied across every resource and every endpoint defined in an API.  An example of this might be authentication.
+the :class:`ArrestedAPI` object supports two middleware hooks, ``before_all_hooks`` and ``after_all_hooks``. Let's create a basic example that demonstrates how authentication can be applied to your APIs.
+
+
+.. code-block:: python
+
+    def authenticated(endpoint):
+        token_valid = request.args.get('token') == 'test-token'
+        if not token_valid:
+            endpoint.return_error(401)
+
+    api_v1 = ArrestedAPI(app, url_prefix='/v1', before_all_hooks=[authenticated])
+
+
+Hit the ``http://localhost:5000/v1/characters`` url in your browser. We should now get a 401 status code back when requesting the characters API.
+A second request, this time providng our API token should return our character objects. ``http://localhost:5000/v1/characters?token=test-token``
+
+Middleware can also be applied on a per Resource basis. :class:`Resource`, Like the :class:`ArrestedAPI` object also has two options for injecting middleware into the request/response cycle.  ``before_all_hooks`` and ``after_request_hook``.  Let's add some logging code to our characters resource using an after request hook.
+
+
+.. code-block:: python
+
+    def log_request(endpoint, response):
+
+        app.logger.debug('request to characters resource made')
+        return response
+
+    characters_resource = Resource('characters', __name__, url_prefix='/characters', after_all_hooks=[log_request])
+
+Our middleware is slightly different from the authenication example.  When we're dealing with an after request hook we are also passed the response object as well as the endpoint instance.  The response object should be returned
+from every after hook defined on our APIs and Resources.
+
+Lastly we come to the :class:`Endpoint` object.  :class:`Endpoint` supports defining middleware using the following hooks:
+
+.. code-block:: python
+
+    before_all_hooks = []
+    before_get_hooks = []
+    after_get_hooks = []
+    before_post_hooks = []
+    after_post_hooks = []
+    before_put_hooks = []
+    after_put_hooks = []
+    before_patch_hooks = []
+    after_patch_hooks = []
+    before_delete_hooks = []
+    after_delete_hooks = []
+    after_all_hooks = []
+
+As you can see, not only can we dfine the before_all_hooks and after_all_hooks like we have on the :class:`ArrestedAPI` and :class:`Resource`, we can also inject middleware before and after each http method.
+Let's update our CharacterObjectEndpoint to require an admin for PUT requests.
+
+.. code-block:: python
+
+    def is_admin(endpoint):
+
+        endpoint.return_error(403)
+
+    class CharacterObjectEndpoint(KimEndpoint, DBObjectMixin):
+
+        name = 'object'
+        url = '/<string:obj_id>'
+        mapper_class = CharacterMapper
+        model = Character
+        before_put_hooks = [is_admin]
+
+        def get_query(self):
+
+            return db.session.query(Character)
+
+
+Making a PUT request to ``http://localhost:5000/v1/characters/1`` using curl will now return a 403
+
+
+Handling Requests
+-------------------
+
+
+Handling Responses
+-------------------
