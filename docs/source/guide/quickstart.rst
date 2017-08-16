@@ -24,8 +24,8 @@ Please note that Arrested can be used with any flavour of data store or preferre
 You can find the example application `here <https://github.com/oldstlabs/flask-arrested/tree/master/example>`_.
 
 
-Defining your first API
--------------------------
+APIs, Resources and Endpoints - Defining your first API
+-------------------------------------------------------------
 
 Flask-Arrested is split into 3 key concepts.  :class:`ArrestedAPI`'s, :class:`Resource` and :class:`Endpoint`.  API's contian multiple Resources.  For example
 Our API will contain a Characters resource, a Planets resource and so on.  Resources are a collection of Endpoints.  Endpoints define
@@ -109,14 +109,52 @@ There's a lot going on here, let's recap.
 All in around 50 lines of code!  Try making some other requests using curl to add new characters or update Obe Wan.
 
 
-Using Middleware
+Getting objects
+^^^^^^^^^^^^^^^^
+
+Our example API is using the SQLAlchemy integration.  In our CharactersListEndpoint we use the DBListMixin.  All we needed to do for our Characters to be returned
+from the API was provide the :meth:`arrested.contrib.sql_alchemy.DBListMixin.get_query`.  The :class:`arrested.contrib.sql_alchemy.DBListMixin` implements the :class:`arrested.mixins.GetListMixin`.  This class
+expects the :meth:`arrested.mixins.GetListMixin.get_objects` to be implemented.
+
+If you wanted special handling for fetching objects from a different datastore or you need to apply some further processing to your database objects, you could simply override :meth:`arrested.mixins.GetListMixin.get_objects` and do the work there.
+
+.. code-block:: python
+
+    def get_objects(self, obj):
+
+        return get_objects_from_data_store()
+
+Saving objects
+^^^^^^^^^^^^^^^^
+
+The DBCreateMixin automatically handles persisting our new Character objects back to the database.  If we wnated to do some additional processing on the object before the session is committed we could simply override the :meth:`arrested.mixins.CreateMixin.save_object` which the :class:`arrested.contrib.sql_alchemy.DBCreateMixin` implements.
+
+.. code-block:: python
+
+    def save_object(self, obj):
+
+        obj.created_by = self.get_user()
+        return super(CharactersListEndpoint, self).save_object(obj)
+
+
+Updating objects
+^^^^^^^^^^^^^^^^^
+
+Deleting objects
+^^^^^^^^^^^^^^^^^
+
+
+Middleware
 -------------------
 
 Flask comes with a great system for handling middleware.  Arrested builds on top of this system to allow more fine grained control of where and when your middleware is run
 when requests are being made to your APIs.
 
+API Middleware
+^^^^^^^^^^^^^^^^^
+
 Middleware can be applied at each level of the API.  You will often want a peice middleware to be applied across every resource and every endpoint defined in an API.  An example of this might be authentication.
-the :class:`ArrestedAPI` object supports two middleware hooks, ``before_all_hooks`` and ``after_all_hooks``. Let's create a basic example that demonstrates how authentication can be applied to your APIs.
+The :class:`ArrestedAPI` object supports two middleware hooks, ``before_all_hooks`` and ``after_all_hooks``. Let's create a basic example that demonstrates how authentication can be applied across APIs.
 
 
 .. code-block:: python
@@ -131,6 +169,9 @@ the :class:`ArrestedAPI` object supports two middleware hooks, ``before_all_hook
 
 Hit the ``http://localhost:5000/v1/characters`` url in your browser. We should now get a 401 status code back when requesting the characters API.
 A second request, this time providng our API token should return our character objects. ``http://localhost:5000/v1/characters?token=test-token``
+
+Resource Middleware
+^^^^^^^^^^^^^^^^^^^^^
 
 Middleware can also be applied on a per Resource basis. :class:`Resource`, Like the :class:`ArrestedAPI` object also has two options for injecting middleware into the request/response cycle.  ``before_all_hooks`` and ``after_request_hook``.  Let's add some logging code to our characters resource using an after request hook.
 
@@ -147,22 +188,23 @@ Middleware can also be applied on a per Resource basis. :class:`Resource`, Like 
 Our middleware is slightly different from the authenication example.  When we're dealing with an after request hook we are also passed the response object as well as the endpoint instance.  The response object should be returned
 from every after hook defined on our APIs and Resources.
 
+Endpoint Middleware
+^^^^^^^^^^^^^^^^^^^^^
+
 Lastly we come to the :class:`Endpoint` object.  :class:`Endpoint` supports defining middleware using the following hooks:
 
-.. code-block:: python
-
-    before_all_hooks = []
-    before_get_hooks = []
-    after_get_hooks = []
-    before_post_hooks = []
-    after_post_hooks = []
-    before_put_hooks = []
-    after_put_hooks = []
-    before_patch_hooks = []
-    after_patch_hooks = []
-    before_delete_hooks = []
-    after_delete_hooks = []
-    after_all_hooks = []
+* before_all_hooks
+* before_get_hooks
+* after_get_hooks
+* before_post_hooks
+* after_post_hooks
+* before_put_hooks
+* after_put_hooks
+* before_patch_hooks
+* after_patch_hooks
+* before_delete_hooks
+* after_delete_hooks
+* after_all_hooks
 
 As you can see, not only can we dfine the before_all_hooks and after_all_hooks like we have on the :class:`ArrestedAPI` and :class:`Resource`, we can also inject middleware before and after each http method.
 Let's update our CharacterObjectEndpoint to require an admin for PUT requests.
@@ -189,9 +231,18 @@ Let's update our CharacterObjectEndpoint to require an admin for PUT requests.
 Making a PUT request to ``http://localhost:5000/v1/characters/1`` using curl will now return a 403
 
 
-Handling Requests
--------------------
+Handling Requests and Responses
+--------------------------------
 
+For the sake of the quickstart being, well, quick we're making use of the provided integrations for Kim and SQLAlchemy.  These contrib modules are doing a lot of work for us.
+The advanced documentation goes into more detail about these topics but I felt it was important to surface a least the fundamentals of how Arrested handles incoming requests and generates responses.
 
-Handling Responses
--------------------
+:class:`Endpoint` requires that a :class:`ResponseHandler` and :class:`RequestHandler` be set.  These classes define a standard interface for processing data into and out from your API.  In our example API we use the :class:`arrested.contrib.kim.KimEndpoint` class
+which sets up everything we need to have Kim serialize and marshal our data.
+
+:class:`ResponseHandler` and :class:`RequestHandler` gives users complete flexability over how data is handled.  You could have one library dealing with data in and and another that handles serialization - even mixing different libraries for different endpoints.  As long as the Handler interface has been implemented these classes
+can do whatever you like.
+
+You can read more about these topcis in depth in the advanced documentation.
+
+:ref:`Request and Response handling <advanced_request_response_handling>`.
