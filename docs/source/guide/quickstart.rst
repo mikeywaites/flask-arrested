@@ -36,10 +36,6 @@ Flask-Arrested is split into 3 key concepts.  :class:`.ArrestedAPI`'s, :class:`.
 Our API will contain a Characters resource, a Planets resource and so on.  Resources are a collection of Endpoints.  Endpoints define
 the urls inside of our Resources ``/v1/charcaters`` ``/v1/planets/hfyf66775gjgjjf`` etc.
 
-.. note::
-
-    To follow along with the example you will need to install Docker for your operating system.  Find out how here.
-
 .. code-block:: python
 
     from flask import Flask
