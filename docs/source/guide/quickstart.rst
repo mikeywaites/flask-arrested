@@ -257,7 +257,7 @@ To support updating objects via PATCH requests all we need to do is use the :cla
 Deleting objects
 ^^^^^^^^^^^^^^^^^
 
-The last operation to cover is deleteing objects.  :class:`DBObjectMixin <arrested.contrib.sql_alchemy.DBObjectMixin` overrides the :meth:`.DeleteObjectMixin.delete_object` method to automatically remove the object from the database.  We can override this as we've seen previously to provide custom logic.
+The last operation to cover is deleteing objects.  :class:`DBObjectMixin <arrested.contrib.sql_alchemy.DBObjectMixin>` overrides the :meth:`.DeleteObjectMixin.delete_object` method to automatically remove the object from the database.  We can override this as we've seen previously to provide custom logic.
 As we saw with the put and patch mixins we must implement the :meth:`ObjectMixin.get_object` method as well as :meth:`.DeleteObjectMixin.delete_object`.
 
 .. code-block:: python
