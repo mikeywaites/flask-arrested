@@ -2,8 +2,20 @@ version: "3"
 
 services:
 
-  unit_tests:
-    build: .
+  py3:
+    build:
+      context: .
+      dockerfile: Dockerfile.py3
+    command: py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
+    volumes:
+      - .:/opt/code
+    tty: true
+    stdin_open: true
+
+  py2:
+    build:
+      context: .
+      dockerfile: Dockerfile.py2
     command: py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
     volumes:
       - .:/opt/code
@@ -21,7 +33,9 @@ services:
       - .:/opt/code
 
   e2e_tests:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.py3
     command: behave tests/e2e_tests/features
     volumes:
       - .:/opt/code
