@@ -6,7 +6,8 @@ from arrested import (
     Endpoint, GetListMixin, GetObjectMixin,
     ResponseHandler, RequestHandler, ObjectMixin
 )
-from unittest import mock
+
+from mock import patch
 
 from tests.endpoints import CharactersEndpoint, CharacterEndpoint
 
@@ -27,7 +28,7 @@ def test_get_list_mixin_handle_get_request_no_objects(app):
     """assert the GetListMixin handles null objects correctly in the response payload.
     """
 
-    with mock.patch.object(GetListEndpoint, 'get_objects', return_value=None) as mock_method:
+    with patch.object(GetListEndpoint, 'get_objects', return_value=None) as mock_method:
         endpoint = GetListEndpoint()
         resp = endpoint.get()
         assert mock_method.called
@@ -63,7 +64,7 @@ def test_get_list_mixin_sets_objects(app):
 
     endpoint = GetListEndpoint()
     mock_objects = [{'foo': 'bar'}]
-    with mock.patch.object(GetListEndpoint, 'get_objects', return_value=mock_objects):
+    with patch.object(GetListEndpoint, 'get_objects', return_value=mock_objects):
 
         endpoint.get()
         assert endpoint.objects == mock_objects
@@ -75,7 +76,7 @@ def test_get_list_mixin_list_response(app):
 
     endpoint = GetListEndpoint()
     mock_objects = [{'foo': 'bar'}]
-    with mock.patch.object(GetListEndpoint, 'get_objects', return_value=mock_objects):
+    with patch.object(GetListEndpoint, 'get_objects', return_value=mock_objects):
 
         resp = endpoint.get()
         assert resp.mimetype == 'application/json'
@@ -89,7 +90,7 @@ def test_get_object_mixin_handle_get_request_none_not_allowed(app):
     allow none is false.
     """
 
-    with mock.patch.object(CharacterEndpoint, 'get_object', return_value=None):
+    with patch.object(CharacterEndpoint, 'get_object', return_value=None):
         endpoint = CharacterEndpoint()
         endpoint.allow_none = False
         with pytest.raises(NotFound):
@@ -100,7 +101,7 @@ def test_get_object_mixin_handle_get_request_allow_none(app):
     """assert the GetObjectMixin handles no object correctly when allow_none=True
     """
 
-    with mock.patch.object(CharacterEndpoint, 'get_object', return_value=None) as mock_method:
+    with patch.object(CharacterEndpoint, 'get_object', return_value=None) as mock_method:
         endpoint = CharacterEndpoint()
         endpoint.allow_none = True
         resp = endpoint.get()
@@ -138,7 +139,7 @@ def test_get_object_mixin_sets_object(app):
 
     endpoint = CharacterEndpoint()
     mock_object = {'foo': 'bar'}
-    with mock.patch.object(CharacterEndpoint, 'get_object', return_value=mock_object):
+    with patch.object(CharacterEndpoint, 'get_object', return_value=mock_object):
 
         endpoint.get()
         assert endpoint.obj == mock_object
@@ -150,7 +151,7 @@ def test_get_object_mixin_obj_response(app):
 
     endpoint = CharacterEndpoint()
     mock_object = {'foo': 'bar'}
-    with mock.patch.object(CharacterEndpoint, 'get_object', return_value=mock_object):
+    with patch.object(CharacterEndpoint, 'get_object', return_value=mock_object):
 
         resp = endpoint.get()
         assert resp.mimetype == 'application/json'
@@ -253,7 +254,7 @@ def test_object_mixin_obj_property_calls_get_object():
     class MyEndpoint(Endpoint, ObjectMixin):
         pass
 
-    with mock.patch.object(MyEndpoint, 'get_object', return_value={'foo': 'bar'}) as mocked:
+    with patch.object(MyEndpoint, 'get_object', return_value={'foo': 'bar'}) as mocked:
         endpoint = MyEndpoint()
         endpoint.obj
         mocked.assert_called_once()
@@ -264,7 +265,7 @@ def test_object_mixin_obj_property_sets_obj():
     class MyEndpoint(Endpoint, ObjectMixin):
         pass
 
-    with mock.patch.object(MyEndpoint, 'get_object', return_value={'foo': 'bar'}) as mocked:
+    with patch.object(MyEndpoint, 'get_object', return_value={'foo': 'bar'}) as mocked:
         endpoint = MyEndpoint()
         endpoint.obj
         assert endpoint._obj == {'foo': 'bar'}
@@ -280,7 +281,7 @@ def test_PUT_calls_handle_put_request(app):
             obj = {'foo': 'bar'}
             return obj
 
-    with mock.patch.object(MyEndpoint, 'handle_put_request') as mock_handle_meth:
+    with patch.object(MyEndpoint, 'handle_put_request') as mock_handle_meth:
         endpoint = MyEndpoint()
         endpoint.put()
         mock_handle_meth.assert_called_once()
@@ -296,7 +297,7 @@ def test_handle_PUT_request_calls_get_object(app):
             obj = {'foo': 'bar'}
             return obj
 
-    with mock.patch.object(MyEndpoint, 'get_object', return_value={'foo': 'bar'}) as mock_get_object:
+    with patch.object(MyEndpoint, 'get_object', return_value={'foo': 'bar'}) as mock_get_object:
         endpoint = MyEndpoint()
         endpoint.put()
         mock_get_object.assert_called_once()
@@ -335,7 +336,7 @@ def test_handle_PUT_request_calls_update_object(app):
             obj = {'foo': 'bar'}
             return obj
 
-    with mock.patch.object(MyEndpoint, 'update_object') as mock_update_object:
+    with patch.object(MyEndpoint, 'update_object') as mock_update_object:
         endpoint = MyEndpoint()
         endpoint.put()
         mock_update_object.assert_called_once()
@@ -367,7 +368,7 @@ def test_DELETE_calls_handle_delete_request(app):
             obj = {'foo': 'bar'}
             return obj
 
-    with mock.patch.object(MyEndpoint, 'handle_delete_request') as mock_handle_meth:
+    with patch.object(MyEndpoint, 'handle_delete_request') as mock_handle_meth:
         endpoint = MyEndpoint()
         endpoint.delete()
         mock_handle_meth.assert_called_once()
@@ -383,7 +384,7 @@ def test_handle_DELETE_request_calls_get_object(app):
             obj = {'foo': 'bar'}
             return obj
 
-    with mock.patch.object(MyEndpoint, 'get_object') as mock_get_object:
+    with patch.object(MyEndpoint, 'get_object') as mock_get_object:
         endpoint = MyEndpoint()
         endpoint.delete()
         mock_get_object.assert_called_once()
@@ -399,7 +400,7 @@ def test_handle_DELETE_request_calls_delete_object(app):
             obj = {'foo': 'bar'}
             return obj
 
-    with mock.patch.object(MyEndpoint, 'delete_object') as mock_delete_object:
+    with patch.object(MyEndpoint, 'delete_object') as mock_delete_object:
         endpoint = MyEndpoint()
         endpoint.delete()
         mock_delete_object.assert_called_once_with({'foo': 'bar'})

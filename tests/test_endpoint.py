@@ -1,6 +1,6 @@
 import json
 
-from unittest import mock
+from mock import patch, MagicMock
 
 from flask import Response
 from werkzeug.exceptions import HTTPException
@@ -152,14 +152,14 @@ def test_get_calls_handle_get_request():
             pass
 
     data = {'foo': 'bar'}
-    with mock.patch.object(MyEndpoint, 'handle_get_request', return_value=data) as mocked:
+    with patch.object(MyEndpoint, 'handle_get_request', return_value=data) as mocked:
         MyEndpoint().get()
         mocked.assert_called_once()
 
 
 def test_before_get_hooks(app):
 
-    log_request = mock.MagicMock(return_value=None)
+    log_request = MagicMock(return_value=None)
 
     class MyEndpoint(Endpoint, GetListMixin):
 
@@ -196,14 +196,14 @@ def test_post_calls_handle_post_request():
             pass
 
     data = {'foo': 'bar'}
-    with mock.patch.object(MyEndpoint, 'handle_post_request', return_value=data) as _mock:
+    with patch.object(MyEndpoint, 'handle_post_request', return_value=data) as _mock:
         MyEndpoint().post()
         _mock.assert_called_once()
 
 
 def test_before_post_hooks(app):
 
-    log_request = mock.MagicMock(return_value=None)
+    log_request = MagicMock(return_value=None)
 
     class MyEndpoint(Endpoint, CreateMixin):
 
@@ -242,14 +242,14 @@ def test_put_calls_handle_put_request():
             pass
 
     data = {'foo': 'bar'}
-    with mock.patch.object(MyEndpoint, 'handle_put_request', return_value=data) as _mock:
+    with patch.object(MyEndpoint, 'handle_put_request', return_value=data) as _mock:
         MyEndpoint().put()
         _mock.assert_called_once()
 
 
 def test_before_put_hooks(app):
 
-    log_request = mock.MagicMock(return_value=None)
+    log_request = MagicMock(return_value=None)
 
     class MyEndpoint(Endpoint, PutObjectMixin):
 
@@ -296,14 +296,14 @@ def test_patch_calls_handle_patch_request():
             pass
 
     data = {'foo': 'bar'}
-    with mock.patch.object(MyEndpoint, 'handle_patch_request', return_value=data) as _mock:
+    with patch.object(MyEndpoint, 'handle_patch_request', return_value=data) as _mock:
         MyEndpoint().patch()
         _mock.assert_called_once()
 
 
 def test_before_patch_hooks(app):
 
-    log_request = mock.MagicMock(return_value=None)
+    log_request = MagicMock(return_value=None)
 
     class MyEndpoint(Endpoint, PatchObjectMixin):
 

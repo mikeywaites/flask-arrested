@@ -1,14 +1,11 @@
-import json
 import pytest
 
-from unittest.mock import patch, Mock
+from mock import patch, Mock
 from flask_sqlalchemy import SQLAlchemy
-
-from flask import url_for
 
 from arrested import Endpoint
 from arrested.exceptions import ArrestedException
-from arrested.contrib.sqa import (
+from arrested.contrib.sql_alchemy import (
     DBMixin,
     DBListMixin,
     DBCreateMixin,

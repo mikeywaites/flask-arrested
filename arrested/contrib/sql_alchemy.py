@@ -70,8 +70,8 @@ class DBListMixin(GetListMixin, DBMixin):
     Usage::
 
         from arrested import Resource, Endpoint
-        from arrested.contrib.sqa import DBListMixin
-        from arrested.contrib.kim import KimRequestHandler, KimResponseHandler
+        from arrested.contrib.sql_alchemy import DBListMixin
+        from arrested.contrib.kim_arrested import KimRequestHandler, KimResponseHandler
 
         from .models import db, Character
 
@@ -141,8 +141,8 @@ class DBObjectMixin(GetObjectMixin,
     Usage::
 
         from arrested import Resource, Endpoint
-        from arrested.contrib.sqa import DBObjectMixin
-        from arrested.contrib.kim import KimRequestHandler, KimResponseHandler
+        from arrested.contrib.sql_alchemy import DBObjectMixin
+        from arrested.contrib.kim_arrested import KimRequestHandler, KimResponseHandler
 
         from .models import db, Character
 
