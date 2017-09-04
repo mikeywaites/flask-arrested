@@ -13,11 +13,6 @@ First, make sure that:
 * Arrested is :ref:`installed <install>`
 
 This tutorial steps through creating a simple Star Wars themed REST API using Arrested.  We assume you have a working knowledge of both Python and Flask.
-The example app uses the following additional libraries
-
-* SQLAlchemy
-* Flask-SQLAlchemy
-* Kim
 
 Example Application
 --------------------
@@ -40,17 +35,13 @@ the urls inside of our Resources ``/v1/charcaters`` ``/v1/planets/hfyf66775gjgjj
 
     from flask import Flask
 
-    from arrested import ArrestedAPI, Resource
-    from arrested.contrib.sql_alchemy import (
-        DBListMixin,
-        DBCreateMixin,
-        DBObjectMixin,
+    from arrested import (
+        ArrestedAPI, Resource, Endpoint, GetListMixin, CreateMixin,
+        GetObjectMixin, PutObjectMixin, DeleteObjectMixin, ResponseHandler
     )
-    from arrested.contrib.kim_arrested import KimEndpoint
 
+    from example.hanlders import DBRequestHandler, character_serializer
     from example.models import db, Character
-    from example.mappers import CharacterMapper
-
 
     app = Flask(__name__)
     api_v1 = ArrestedAPI(app, url_prefix='/v1')
@@ -61,27 +52,72 @@ the urls inside of our Resources ``/v1/charcaters`` ``/v1/planets/hfyf66775gjgjj
     characters_resource = Resource('characters', __name__, url_prefix='/characters')
 
 
-    class CharactersIndexEndpoint(KimEndpoint, DBListMixin, DBCreateMixin):
+    class CharactersIndexEndpoint(Endpoint, GetListMixin, CreateMixin):
 
         name = 'list'
         many = True
-        mapper_class = CharacterMapper
+        response_handler = DBResponseHandler
 
-        def get_query(self):
+        def get_response_handler_params(self, **params):
 
-            return db.session.query(Character)
+            params['serializer'] = character_serializer
+            return params
+
+        def get_objects(self):
+
+            characters = db.session.query(Character).all()
+            return characters
+
+        def save_object(self, obj):
+
+            character = Character(**obj)
+            db.session.add(character)
+            db.session.commit()
+            return character
 
 
-    class CharacterObjectEndpoint(KimEndpoint, DBObjectMixin):
+    class CharacterObjectEndpoint(Endpoint, GetObjectMixin,
+                                  PutObjectMixin, DeleteObjectMixin):
 
         name = 'object'
         url = '/<string:obj_id>'
-        mapper_class = CharacterMapper
-        model = Character
+        response_handler = DBResponseHandler
 
-        def get_query(self):
+        def get_response_handler_params(self, **params):
 
-            return db.session.query(Character)
+            params['serializer'] = character_serializer
+            return params
+
+        def get_object(self):
+
+            obj_id = self.kwargs['obj_id']
+            obj = db.session.query(Character).filter(Character.id == obj_id).one_or_none()
+            if not obj:
+                payload = {
+                    "message": "Character object not found.",
+                }
+                self.return_error(404, payload=payload)
+
+            return obj
+
+        def update_object(self, obj):
+
+            data = self.request.data
+            allowed_fields = ['name']
+
+            for key, val in data.items():
+                if key in allowed_fields:
+                    setattr(obj, key, val)
+
+            db.session.add(obj)
+            db.session.commit()
+
+            return obj
+
+        def delete_object(self, obj):
+
+            db.session.delete(obj)
+            db.session.commit()
 
 
     characters_resource.add_endpoint(CharactersIndexEndpoint)
@@ -95,19 +131,75 @@ Start the Docker container in the example/ directory.
 
     $ docker-compose run --rm --service-ports api
 
-Hit the ``http://localhost:5000/v1/characters`` url in your browser.  You will see the JSON response
-for the characters endpoint returned.
 
-There's a lot going on here, let's recap.
+Fetch a list of Character objects..
 
-* We have now got an API that returns a list of serialized character objects via the /v1/characters endpoint.
-* We can create new character objects by making a POST request to /v1/characters
-* We can fetch a character by making a GET request to /v1/characters/1
-* We can update an existing character by making a PUT request to /v1/characters/1
-* We can delete a character by making a DELETE request to /v1/characters/1
-* Our Database objects are being automatically serialzied using the Kim Mapper we defined
+.. code-block:: shell
 
-All in around 50 lines of code!  Try making some other requests using curl to add new characters or update Obe Wan.
+    curl -X GET localhost:5000/v1/characters | python -m json.tool
+
+	{
+		"payload": [
+			{
+				"created_at": "2017-06-04T11:47:02.017094",
+				"id": 1,
+				"name": "Obe Wan"
+			}
+		]
+	}
+
+Add a new Character..
+
+.. code-block:: shell
+
+    curl -H "Content-Type: application/json" -d '{"name":"Darth Vader"}' -X POST localhost:5000/v1/characters | python -m json.tool
+
+	{
+		"payload": [
+			{
+				"created_at": "2017-09-01T04:51:45.456072",
+				"id": 2,
+				"name": "Darth Vader"
+			}
+		]
+	}
+
+
+Fetch a Character by id..
+
+.. code-block:: shell
+
+    curl -X GET localhost:5000/v1/characters/2 | python -m json.tool
+
+	{
+		"payload": {
+            "created_at": "2017-09-01T04:51:45.456072",
+            "id": 2,
+            "name": "Darth Vader"
+		}
+	}
+
+
+Update a Character by id..
+
+.. code-block:: shell
+
+    curl -H "Content-Type: application/json" -d '{"id": 2, "name":"Anakin Skywalker", "created_at": "2017-09-01T04:51:45.456072"}' -X PUT localhost:5000/v1/characters/2 | python -m json.tool
+
+	{
+		"payload": {
+            "created_at": "2017-09-01T04:51:45.456072",
+            "id": 2,
+            "name": "Anakin Skywalker"
+		}
+	}
+
+
+And finally, Delete a Character by id..
+
+.. code-block:: shell
+
+    curl -X DELETE localhost:5000/v1/characters/2
 
 
 Getting objects
