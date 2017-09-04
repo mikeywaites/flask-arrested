@@ -1,9 +1,9 @@
 import json
 
-from unittest.mock import MagicMock
+from mock import MagicMock
 
 from flask import url_for
-from arrested import Resource, ArrestedAPI, Endpoint
+from arrested import Resource, ArrestedAPI
 from tests.endpoints import (
     CharactersEndpoint,
     CharacterEndpoint,

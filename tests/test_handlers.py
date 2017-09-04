@@ -1,7 +1,7 @@
 import pytest
 import json
 
-from unittest.mock import patch
+from mock import patch
 
 from werkzeug.exceptions import BadRequest
 from arrested import (

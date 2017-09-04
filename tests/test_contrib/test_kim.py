@@ -1,13 +1,12 @@
 import pytest
 
-from flask import request as flask_request
 from kim import Mapper, field
 
 from werkzeug.exceptions import BadRequest, UnprocessableEntity
-from unittest.mock import MagicMock, patch, PropertyMock
+from mock import MagicMock
 
 from arrested import PutObjectMixin, PatchObjectMixin
-from arrested.contrib.kim import (
+from arrested.contrib.kim_arrested import (
     KimHandler, KimResponseHandler,
     KimRequestHandler,
     KimEndpoint

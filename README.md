@@ -8,8 +8,8 @@ Release v\ |version|. (:ref:`Installation <install>`)
 
     from flask import Flask
     from arrested import ArrestedAPI, Endpoint, Resource
-    from arrested.contrib.sqla import DBCreateMixinx, DBListMixin
-    from arrested.contrib.kim import KimRequestHandler, KimResponseHandler
+    from arrested.contrib.sql_alchemy import DBCreateMixinx, DBListMixin
+    from arrested.contrib.kim_arrrested import KimRequestHandler, KimResponseHandler
     from arrested.contrib.oauth import OAuthMixin
 
     from .mappers import UserMapper

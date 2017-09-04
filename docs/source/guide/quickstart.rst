@@ -48,13 +48,13 @@ Our API will...
     from flask import Flask
 
     from arrested import ArrestedAPI, Resource
-    from arrested.contrib.sqa import (
+    from arrested.contrib.sql_alchemy import (
         DBListMixin,
         DBCreateMixin,
         DBObjectMixin,
         DBUpdateMixin
     )
-    from arrested.contrib.kim import KimEndpoint
+    from arrested.contrib.kim_arrested import KimEndpoint
 
     from example.models import db, Character
     from example.mappers import CharacterMapper

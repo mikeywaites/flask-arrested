@@ -6,3 +6,4 @@ flask_sqlalchemy
 py-kim
 behave
 behave-http
+mock==2.0.0
