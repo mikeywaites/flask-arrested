@@ -34,7 +34,7 @@ jobs:
       - run:
           name: Install Python deps in a venv
           command: |
-            python -m venv py2venv
+            virtualenv py2venv
             . py2venv/bin/activate
             pip install -r requirements.txt
             python setup.py develop
