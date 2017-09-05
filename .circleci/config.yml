@@ -11,18 +11,31 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: py3deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           name: Install Python deps in a venv
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
+            python3 -m venv py3venv
+            . py3venv/bin/activate
             pip install -r requirements.txt
             python3 setup.py develop
       - save_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: py3deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
           paths:
-            - "venv"
+            - "py3venv"
+      - restore_cache:
+          key: py2deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      - run:
+          name: Install Python deps in a python 2 venv
+          command: |
+            python -m venv py2venv
+            . py2venv/bin/activate
+            pip install -r requirements.txt
+            python setup.py develop
+      - save_cache:
+          key: py2deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          paths:
+            - "py2venv"
   test:
     <<: *defaults
     steps:
@@ -31,12 +44,12 @@ jobs:
           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           command: |
-            . ~/flask-arrested/venv/bin/activate
+            . ~/flask-arrested/py3venv/bin/activate
             python3 setup.py develop
             py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
       - run:
           command: |
-            . ~/flask-arrested/venv/bin/activate
+            . ~/flask-arrested/py2venv/bin/activate
             python setup.py develop
             py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
 
