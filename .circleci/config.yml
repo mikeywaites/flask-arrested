@@ -34,6 +34,11 @@ jobs:
             . ~/flask-arrested/venv/bin/activate
             python3 setup.py develop
             py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
+      - run:
+          command: |
+            . ~/flask-arrested/venv/bin/activate
+            python setup.py develop
+            py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
 
   release:
     <<: *defaults
