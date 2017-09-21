@@ -202,21 +202,29 @@ And finally, Delete a Character by id..
     curl -X DELETE localhost:5000/v1/characters/2
 
 
+URLS && url_for
+^^^^^^^^^^^^^^^^
+
+The second is the name attribute.  This attribute is used to register the Endpoint with Flask's url_mapping functionality. Much like normal Blueprint's in Flask, we can use url_for to retrieve the
+url our endpoint is mapped to by calling `url_for({resource_name}.{endpoint_name})`.  In this case `url_for('news.list')`.
+
+
 Getting objects
 ^^^^^^^^^^^^^^^^
 
-Our example API is using the SQLAlchemy integration.  In our CharactersListEndpoint we use the DBListMixin.  All we needed to do for our Characters to be returned
-from the database via our API was provide the :meth:`get_query <arrested.contrib.sql_alchemy.DBListMixin.get_query>` method.  The :class:`DBListMixin <arrested.contrib.sql_alchemy.DBListMixin>` implements the :class:`.GetListMixin` interface.  This class
-expects the :meth:`.GetListMixin.get_objects` method to be implemented.
+We defined an Endpoint within our characters Resource that accepts incoming GET requests to /v1/characters.  This Endpoint fetches all the Character objects from the database and our custom DBRequestHandler handles converting them
+into a format that can be serialized as JSON.  The topic of Request and Response handling is covered in more detail below so for now let's take a closer look at the :class:`.GetListMixin` mixin.
 
-If you wanted special handling for fetching objects from a different datastore or you need to apply some further processing to your database objects, you could simply override :meth:`get_objects <arrested.mixins.GetListMixin.get_objects>` and do the work there.  Below is an example of a custom endpoint that implements the :class:`.GetListMixin` interface.
+:class:`.GetListMixin` provides automatic handling of GET requests.  It requires that we define a single method :meth:`.GetListMixin.get_objects`.  This method should return data that our specified ResponseHandler can serialize.
+
+We tell Arrested that this endpoint returns many objects using the `many` class attribute.  This setting is used by certain Response handlers when serializing the objects returned by Endpoints.
 
 .. code-block:: python
 
     import redis
     from arrested import Endpoint, GetListMixin
 
-    class CustomEndpoint(Endpoint, GetListMixin):
+    class NewsEndpoint(Endpoint, GetListMixin):
 
         many = True
         name = 'list'
@@ -226,10 +234,16 @@ If you wanted special handling for fetching objects from a different datastore o
             r = redis.StrictRedis(host='localhost', port=6379, db=0)
             return r.hmget('news')
 
+
 Saving objects
 ^^^^^^^^^^^^^^^^
 
-The :class:`DBCreateMixin <arrested.contrib.sql_alchemy.DBCreateMixin>` automatically handles persisting our new Character objects back to the database.  If we wanted to do some additional processing on the object before the session was committed or we needed some custom logic for our endpoint we simply override the :meth:`.CreateMixin.save_object` which the :class:`DBCreateMixin <arrested.contrib.sql_alchemy.DBCreateMixin>` implements.  Below is an example of a custom endpoint that implements the :class:`.CreateMixin` interface and saves our data in redis.
+
+The CharactersIndexEndpoint also inherits the :class:`.CreateMixin`.  This mixin provides functionality for handling POST requests.  The :class:`.CreateMixin` requires that the :meth:`save_object <CreateMixin.save_object>` method be implemented.
+The save_obejct method will be called with the obj or objects processed by the Endpoint's defined request_handler.
+
+
+Here's an example Endpoint that store the incoming JSON data in Redis.
 
 .. code-block:: python
 
@@ -249,24 +263,23 @@ The :class:`DBCreateMixin <arrested.contrib.sql_alchemy.DBCreateMixin>` automati
         def save_object(self, obj):
 
             # obj will be a dict here as we're using the default RequestHandler
-            return r.hmset('news', obj)
+            r.hmset('news', obj)
+            return obj
 
 
 Object Endpoints
 ^^^^^^^^^^^^^^^^^
 
-Object endpoints are allow you to define APIS that let your uses GET, PUT, PATCH and DELETE single objects.  The :class:`DBObjectMixin <arrested.contrib.sql_alchemy.DBObjectMixin>` mixin we used
-with our CharacterObjectEndpoint implements several methods that provide us with everything we need to work with a specific character object.
-
-The Mixins can be combined to provide support for all the typical HTTP methods used when working with a single object.
-Regardless of the HTTP methods your supporting against your object endpoints the :meth:`.ObjectMixin.get_object` is always required.
+Object endpoints allow you to define APIS that typically let your users GET, PUT, PATCH and DELETE single objects.  The Mixins can be combined to provide support for all the typical HTTP methods used when working with a single object.
+Regardless of the HTTP methods your supporting against your object endpoints the :meth:`get_object <.ObjectMixin.get_object>` is always required.
 
 
 Getting a single object
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-:class:`DBObjectMixin <arrested.contrib.sql_alchemy.DBObjectMixin>` implements the :class:`.GetObjectMixin` interface.  It automatically handles filtering the query returned by the :meth:`DBObjectMixin.get_query <arrested.contrib.sql_alchemy.DBObjectMixin.get_query>` by id.  As we've seen in the examples above we can implement
-cutom logic as required to handle pretty much any use case.  Here's a custom Endpoint that fetches a specific object from redis using the id passed as part of the url.
+To support GET requests that retrieve a single object from an Endpoint you should use the :class:`GetObjectMixin <.GetObjectMixin>`.  In addition to the get_object method, we have also specified a url class attribute.  This attribute is used to define
+the url_mapping rule that Flask will use when routing requests to our Endpoint.  All of the standard options Flask provides are valid.  Arrested will populate a kwargs property on your Endpoint instance which contains the named url paramaters from your
+Endpoint's url.
 
 .. code-block:: python
 
@@ -280,16 +293,15 @@ cutom logic as required to handle pretty much any use case.  Here's a custom End
 
         def get_object(self, obj):
 
+            news_id = self.kwargs['obj_id']
             r = redis.StrictRedis(host='localhost', port=6379, db=0)
-            return r.hmget('news')
+            return r.hmget('news:%s' % news_id)
 
 
 Updating an object
 ^^^^^^^^^^^^^^^^^^^
 
-:class:`DBObjectMixin <arrested.contrib.sql_alchemy.DBObjectMixin>` implements the :class:`.PutObjectMixin` interface.  The :meth:`.PutObjectMixin.update_object` method is overridden to persist our updated object back to the database.  As in the previous examples, this interface can be implemented to provide custom logic as required.  Here's
-a simple example that updates an existing object in a redis set.
-
+Support for updating objects is provided by the :class:`.PutObjectMixin`.  PutObjectMixin requires two methods be implemented. :meth:`get_object <.ObjectMixin.get_object>` and :meth:`update_object <.PutObjectMixin.update_object>`.
 
 .. code-block:: python
 
@@ -303,18 +315,21 @@ a simple example that updates an existing object in a redis set.
 
         def get_object(self, obj):
 
+            news_id = self.kwargs['obj_id']
             r = redis.StrictRedis(host='localhost', port=6379, db=0)
-            return r.hmget('news')
+            return r.hmget('news:%s' % news_id)
 
         def update_object(self, obj):
 
+            news_id = self.kwargs['obj_id']
             r = redis.StrictRedis(host='localhost', port=6379, db=0)
-            return r.hmset('news')
+            return r.hmset('news:%s' % news_id, obj)
 
-When the PUT request is handled by our CustomEndpoint the :meth:`.ObjectMixin.get_object` method is called first to retrieve the existing object.  If an object is found
+When a PUT request is handled by our CustomEndpoint the :meth:`get_object <.ObjectMixin.get_object>` method is called first to retrieve the existing object.  If an object is found
 the :meth:`.PutObjectMixin.update_object` is then called.
 
-To support updating objects via PATCH requests all we need to do is use the :class:`.PatchObjectMixin`.  It works in very much the same way as :class:`.PutObjectMixin` except that we the :meth:`.PatchObjectMixin.patch_object` method is called.
+To support updating objects via PATCH requests all we need to do is use the :class:`.PatchObjectMixin`.  It works in very much the same way as :class:`.PutObjectMixin`
+except that we the :meth:`patch_object <.PatchObjectMixin.patch_object>` method is called when an object is returned by get_object.
 
 
 .. code-block:: python
@@ -329,13 +344,15 @@ To support updating objects via PATCH requests all we need to do is use the :cla
 
         def get_object(self, obj):
 
+            news_id = self.kwargs['obj_id']
             r = redis.StrictRedis(host='localhost', port=6379, db=0)
-            return r.hmget('news')
+            return r.hmget('news:%s' % news_id)
 
         def do_update(self, obj):
 
+            news_id = self.kwargs['obj_id']
             r = redis.StrictRedis(host='localhost', port=6379, db=0)
-            return r.hmset('news')
+            return r.hmset('news%s' % news_id, obj)
 
         def update_object(self, obj):
 
@@ -349,8 +366,7 @@ To support updating objects via PATCH requests all we need to do is use the :cla
 Deleting objects
 ^^^^^^^^^^^^^^^^^
 
-The last operation to cover is deleteing objects.  :class:`DBObjectMixin <arrested.contrib.sql_alchemy.DBObjectMixin>` overrides the :meth:`.DeleteObjectMixin.delete_object` method to automatically remove the object from the database.  We can override this as we've seen previously to provide custom logic.
-As we saw with the put and patch mixins we must implement the :meth:`ObjectMixin.get_object` method as well as :meth:`.DeleteObjectMixin.delete_object`.
+Support for updating objects is provided by the :class:`.DeleteObjectMixin`.  DeleteObjectMixin requires two methods be implemented. :meth:`get_object <.ObjectMixin.get_object>` and :meth:`delete_object <.DleteObjectMixin.delete_object>`.
 
 .. code-block:: python
 
@@ -364,12 +380,14 @@ As we saw with the put and patch mixins we must implement the :meth:`ObjectMixin
 
         def get_object(self, obj):
 
+            news_id = self.kwargs['obj_id']
             r = redis.StrictRedis(host='localhost', port=6379, db=0)
-            return r.hmget('news')
+            return r.hmget('news:%s' % news_id)
 
         def delete_object(self, obj):
 
-            return r.delete('news')
+            news_id = self.kwargs['obj_id']
+            return r.delete('news:%s' % news_id)
 
 
 Middleware
@@ -443,17 +461,49 @@ Let's update our CharacterObjectEndpoint to require an admin for PUT requests.
 
         endpoint.return_error(403)
 
-    class CharacterObjectEndpoint(KimEndpoint, DBObjectMixin):
+    class CharacterObjectEndpoint(Endpoint, GetObjectMixin,
+                                  PutObjectMixin, DeleteObjectMixin):
 
         name = 'object'
         url = '/<string:obj_id>'
-        mapper_class = CharacterMapper
-        model = Character
-        before_put_hooks = [is_admin]
+        response_handler = DBResponseHandler
+        before_put_hooks = [is_admin, ]
 
-        def get_query(self):
+        def get_response_handler_params(self, **params):
 
-            return db.session.query(Character)
+            params['serializer'] = character_serializer
+            return params
+
+        def get_object(self):
+
+            obj_id = self.kwargs['obj_id']
+            obj = db.session.query(Character).filter(Character.id == obj_id).one_or_none()
+            if not obj:
+                payload = {
+                    "message": "Character object not found.",
+                }
+                self.return_error(404, payload=payload)
+
+            return obj
+
+        def update_object(self, obj):
+
+            data = self.request.data
+            allowed_fields = ['name']
+
+            for key, val in data.items():
+                if key in allowed_fields:
+                    setattr(obj, key, val)
+
+            db.session.add(obj)
+            db.session.commit()
+
+            return obj
+
+        def delete_object(self, obj):
+
+            db.session.delete(obj)
+            db.session.commit()
 
 
 Making a PUT request to ``http://localhost:5000/v1/characters/1`` using curl will now return a 403
