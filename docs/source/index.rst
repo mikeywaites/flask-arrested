@@ -13,51 +13,95 @@ Release v\ |version|. (:ref:`Installation <install>`)
 **Introducing Arrested**::
 
     from flask import Flask
-    from arrested import ArrestedAPI, Resource
-    from arrested.contrib.kim import KimEndpoint
-    from arrested.contrib.sqla import DBCreateMixinx, DBListMixin
-    from arrested.contrib.sql_alchemy import DBCreateMixinx, DBListMixin
-    from arrested.contrib.kim_arrested import KimRequestHandler, KimResponseHandler
 
-    from .models import Character
+    from arrested import (
+        ArrestedAPI, Resource, Endpoint, GetListMixin, CreateMixin,
+        GetObjectMixin, PutObjectMixin, DeleteObjectMixin, ResponseHandler
+    )
 
-    from kim import Mapper, field
-
-
-    class CharacterMapper(Mapper):
-
-        __type__ = Character
-
-        id = field.Integer(read_only=True)
-        name = field.String()
-        created_at = field.DateTime(read_only=True)
+    from example.hanlders import DBRequestHandler, character_serializer
+    from example.models import db, Character
 
     app = Flask(__name__)
-    api_v1 = ArrestedAPI(app, url_prefix='/v1)
+    api_v1 = ArrestedAPI(app, url_prefix='/v1')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////opt/code/example/starwars.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.init_app(app)
 
     characters_resource = Resource('characters', __name__, url_prefix='/characters')
 
-    class CharactersListEndpoint(KimEndpoint, DBListMixin, DBCreateMixin):
+
+    class CharactersIndexEndpoint(Endpoint, GetListMixin, CreateMixin):
 
         name = 'list'
         many = True
-        mapper_class = CharacterMapper
+        response_handler = DBResponseHandler
 
-        def get_query(self):
+        def get_response_handler_params(self, **params):
 
-            return db.session.query(Character)
+            params['serializer'] = character_serializer
+            return params
+
+        def get_objects(self):
+
+            characters = db.session.query(Character).all()
+            return characters
+
+        def save_object(self, obj):
+
+            character = Character(**obj)
+            db.session.add(character)
+            db.session.commit()
+            return character
 
 
-    class CharacterObjectEndpoint(KimEndpoint, DBObjectMixin):
+    class CharacterObjectEndpoint(Endpoint, GetObjectMixin,
+                                  PutObjectMixin, DeleteObjectMixin):
 
         name = 'object'
         url = '/<string:obj_id>'
-        mapper_class = CharacterMapper
+        response_handler = DBResponseHandler
 
-        def get_query(self):
+        def get_response_handler_params(self, **params):
 
-            return db.session.query(Character)
+            params['serializer'] = character_serializer
+            return params
 
+        def get_object(self):
+
+            obj_id = self.kwargs['obj_id']
+            obj = db.session.query(Character).filter(Character.id == obj_id).one_or_none()
+            if not obj:
+                payload = {
+                    "message": "Character object not found.",
+                }
+                self.return_error(404, payload=payload)
+
+            return obj
+
+        def update_object(self, obj):
+
+            data = self.request.data
+            allowed_fields = ['name']
+
+            for key, val in data.items():
+                if key in allowed_fields:
+                    setattr(obj, key, val)
+
+            db.session.add(obj)
+            db.session.commit()
+
+            return obj
+
+        def delete_object(self, obj):
+
+            db.session.delete(obj)
+            db.session.commit()
+
+
+    characters_resource.add_endpoint(CharactersIndexEndpoint)
+    characters_resource.add_endpoint(CharacterObjectEndpoint)
+    api_v1.register_resource(characters_resource)
 
 
 
@@ -68,7 +112,7 @@ Arrested is a framework for rapidly building REST API's with Flask.
 
 - Un-Opinionated: Let's you decide "the best way" to implement *your* REST API.
 - Battle Tested: In use across many services in a production environment.
-- Batteries Included! Arrested ships with built in support for popular libraries such as SQLAlchemy, Kim and Marshmallow.  Using something different or have your own tooling your need to support?  Arrested provides a rich API that can be easily customised!
+- Batteries Included! Arrested ships with built in support for popular libraries such as SQLAlchemy, Kim and Marshmallow.  Using something different or have your own tooling you need to support?  Arrested provides a rich API that can be easily customised!
 - Supports any storage backends:  Want to use "hot new database technology X?" No problem!  Arrested can be easily extended to handle all your data needs.
 - Powerful middleware system - Inject logic at any step of the request/response cycle
 
@@ -90,6 +134,17 @@ Get started with Flask-Arrested using the quickstart user guide or take a look a
    :maxdepth: 3
 
    guide/advanced
+
+
+Integrations & Recipies
+------------------------
+
+.. toctree::
+   :maxdepth: 3
+
+   contrib/sqlalchemy
+   contrib/kim
+   contrib/marshmallow
 
 
 The API Documentation / Guide

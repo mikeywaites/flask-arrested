@@ -2,3 +2,8 @@
   padding-top: 0;
   background-color: #fff;
 }
+
+.sidebar-title {
+    text-align: center;
+    font-size: 240%;
+}

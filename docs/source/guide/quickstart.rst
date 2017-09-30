@@ -28,7 +28,7 @@ APIs, Resources and Endpoints - Defining your first API
 -------------------------------------------------------------
 
 Flask-Arrested is split into 3 key concepts.  :class:`.ArrestedAPI`'s, :class:`.Resource` and :class:`.Endpoint`.  API's contian multiple Resources.  For example
-Our API will contain a Characters resource, a Planets resource and so on.  Resources are a collection of Endpoints.  Endpoints define
+Our API contains a Characters resource, a Planets resource and so on.  Resources are a collection of Endpoints.  Endpoints define
 the urls inside of our Resources ``/v1/charcaters`` ``/v1/planets/hfyf66775gjgjjf`` etc.
 
 .. code-block:: python
@@ -205,8 +205,9 @@ And finally, Delete a Character by id..
 URLS && url_for
 ^^^^^^^^^^^^^^^^
 
-The second is the name attribute.  This attribute is used to register the Endpoint with Flask's url_mapping functionality. Much like normal Blueprint's in Flask, we can use url_for to retrieve the
-url our endpoint is mapped to by calling `url_for({resource_name}.{endpoint_name})`.  In this case `url_for('news.list')`.
+URLS's are automatically defined by Resoruce's and Endpoint's using Flask's built in url_mapping functionality.  We optionally provide Resource with a url_prefix which is applied to all of its registered Endponts.
+We can also specify a URI segment for the Endpoint using the ``url`` parameter.  Endpoint's require that the name attribute is provied.  This is the name used when reversing the url using Flask's ``url_for`` function.  Ie `url_for('news.list')`
+where new is the name given to the Resource and list of the name of one of its' registered endpoints.
 
 
 Getting objects
@@ -271,15 +272,16 @@ Object Endpoints
 ^^^^^^^^^^^^^^^^^
 
 Object endpoints allow you to define APIS that typically let your users GET, PUT, PATCH and DELETE single objects.  The Mixins can be combined to provide support for all the typical HTTP methods used when working with a single object.
-Regardless of the HTTP methods your supporting against your object endpoints the :meth:`get_object <.ObjectMixin.get_object>` is always required.
+Regardless of the HTTP methods you're supporting, your object endpoints must provide the :meth:`get_object <.ObjectMixin.get_object>` method.
 
 
 Getting a single object
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-To support GET requests that retrieve a single object from an Endpoint you should use the :class:`GetObjectMixin <.GetObjectMixin>`.  In addition to the get_object method, we have also specified a url class attribute.  This attribute is used to define
-the url_mapping rule that Flask will use when routing requests to our Endpoint.  All of the standard options Flask provides are valid.  Arrested will populate a kwargs property on your Endpoint instance which contains the named url paramaters from your
-Endpoint's url.
+To support GET requests that retrieve a single object from an Endpoint you should use the :class:`GetObjectMixin <.GetObjectMixin>`.  In addition to the get_object method, we have also specified a url class attribute.  Arrested will populate a kwargs property on your Endpoint instance
+which contains the named url paramaters from your Endpoint's url.
+
+Below we use the obj_id passed as part of the url to fetch a new item from Redis by ID.
 
 .. code-block:: python
 
@@ -326,9 +328,9 @@ Support for updating objects is provided by the :class:`.PutObjectMixin`.  PutOb
             return r.hmset('news:%s' % news_id, obj)
 
 When a PUT request is handled by our CustomEndpoint the :meth:`get_object <.ObjectMixin.get_object>` method is called first to retrieve the existing object.  If an object is found
-the :meth:`.PutObjectMixin.update_object` is then called.
+the :meth:`.PutObjectMixin.update_object` method is then called.
 
-To support updating objects via PATCH requests all we need to do is use the :class:`.PatchObjectMixin`.  It works in very much the same way as :class:`.PutObjectMixin`
+To support updating objects via PATCH requests all we need to do is use the :class:`.PatchObjectMixin`.  It works in same way as :class:`.PutObjectMixin`
 except that we the :meth:`patch_object <.PatchObjectMixin.patch_object>` method is called when an object is returned by get_object.
 
 
@@ -366,7 +368,7 @@ except that we the :meth:`patch_object <.PatchObjectMixin.patch_object>` method 
 Deleting objects
 ^^^^^^^^^^^^^^^^^
 
-Support for updating objects is provided by the :class:`.DeleteObjectMixin`.  DeleteObjectMixin requires two methods be implemented. :meth:`get_object <.ObjectMixin.get_object>` and :meth:`delete_object <.DleteObjectMixin.delete_object>`.
+Support for deleting objects is provided by the :class:`.DeleteObjectMixin`.  DeleteObjectMixin requires two methods be implemented. :meth:`get_object <.ObjectMixin.get_object>` and :meth:`delete_object <.DleteObjectMixin.delete_object>`.
 
 .. code-block:: python
 
@@ -393,13 +395,12 @@ Support for updating objects is provided by the :class:`.DeleteObjectMixin`.  De
 Middleware
 -------------------
 
-Flask comes with a great system for handling middleware.  Arrested builds on top of this system to allow more fine grained control of where and when your middleware is run
-when requests are being made to your APIs.
+Flask comes with a great system for defining request middleware.  Arrested builds on top of this system to allow more fine grained control of where and when your middleware is run.
 
 API Middleware
 ^^^^^^^^^^^^^^^^^
 
-Middleware can be applied at each level of the API.  You will often want a peice middleware to be applied across every resource and every endpoint defined in an API.  An example of this might be authentication.
+Middleware can be applied at each level of the Arrested stack.  You will often want a piece middleware to be applied across every resource and every endpoint defined in an API.  An example of this might be authentication.
 The :class:`.ArrestedAPI` object supports two middleware hooks, ``before_all_hooks`` and ``after_all_hooks``. Let's create a basic example that demonstrates how authentication can be applied across APIs.
 
 
@@ -413,7 +414,7 @@ The :class:`.ArrestedAPI` object supports two middleware hooks, ``before_all_hoo
     api_v1 = ArrestedAPI(app, url_prefix='/v1', before_all_hooks=[authenticated])
 
 
-Hit the ``http://localhost:5000/v1/characters`` url in your browser. We should now get a 401 status code back when requesting the characters API.
+Hit the ``http://localhost:5000/v1/characters`` url in your browser. We now get a 401 status code when requesting the characters API.
 A second request, this time providng our API token should return our character objects. ``http://localhost:5000/v1/characters?token=test-token``
 
 Resource Middleware
@@ -432,7 +433,7 @@ Middleware can also be applied on a per Resource basis. :class:`.Resource`, Like
     characters_resource = Resource('characters', __name__, url_prefix='/characters', after_all_hooks=[log_request])
 
 Our middleware is slightly different from the authenication example.  When we're dealing with an after request hook we are also passed the response object as well as the endpoint instance.  The response object should be returned
-from every after hook defined on our APIs and Resources.
+from every after request hook defined on our APIs and Resources.
 
 Endpoint Middleware
 ^^^^^^^^^^^^^^^^^^^^^
@@ -452,7 +453,7 @@ Lastly we come to the :class:`.Endpoint` object.  :class:`.Endpoint` supports de
 * after_delete_hooks
 * after_all_hooks
 
-As you can see, not only can we dfine the before_all_hooks and after_all_hooks like we have on the :class:`.ArrestedAPI` and :class:`.Resource`, we can also inject middleware before and after each http method.
+As you can see, not only can we dfine the before_all_hooks and after_all_hooks like we have on the :class:`.ArrestedAPI` and :class:`.Resource`, we can also inject middleware before and after each HTTP method.
 Let's update our CharacterObjectEndpoint to require an admin for PUT requests.
 
 .. code-block:: python
@@ -506,21 +507,20 @@ Let's update our CharacterObjectEndpoint to require an admin for PUT requests.
             db.session.commit()
 
 
-Making a PUT request to ``http://localhost:5000/v1/characters/1`` using curl will now return a 403
+Making a PUT request to ``http://localhost:5000/v1/characters/1`` using curl now returns a 403
 
 
 Handling Requests and Responses
 --------------------------------
 
-For the sake of the quickstart being, well, quick we're making use of the provided integrations for Kim and SQLAlchemy.  These contrib modules are doing a lot of work for us.
-The advanced documentation goes into more detail about these topics but I felt it was important to surface a least the fundamentals of how Arrested handles incoming requests and generates responses.
-
+Arrested provides a flexible API for handling the data flowing into, and out from your API's.  Each endpoint can have a custom :class:`.RequestHandler` and :class:`ResponseHandler`.  This system provides support for any concievable way of processing data.  Arrested also provides some out of the box integrations with popular
+serialization libraries, such as Kim and Marshmallow.
 
 Request Handling
 ^^^^^^^^^^^^^^^^^
 
-HTTP requests that process data require that a :class:`.RequestHandler` be defined on the Endpoint using the request_handler property.  The default :class:`.RequestHandler` simply pulls the json data from the Flask request, deserialises it into a dict and returns it verbatim.  Let's suppose we want to apply some **very** basic validation ensuring that certain keys are present within the request payload.
-To do this we will implement a custom :class:`.RequestHandler` that takes a list of field names and ensures all the keys are present.
+HTTP requests that process data require that a :class:`.RequestHandler` is defined on the Endpoint using the request_handler property.  The default :class:`.RequestHandler` simply pulls the json data from the Flask request object, deserialises it into a dict and returns it verbatim.
+Let's suppose we want to apply some **very** basic validation ensuring that certain keys are present within the request payload.  To do this we will implement a custom :class:`.RequestHandler` that takes a list of field names and ensures all the keys are present in the request data.
 
 
 .. code-block:: python
@@ -569,14 +569,14 @@ To do this we will implement a custom :class:`.RequestHandler` that takes a list
             return params
 
 
-This simple examples demonstrates the flexibility the handler system offers.  We can define handlers to accomodate for any user case imaginable in python.  We can use the :meth:`.Endpoint.get_request_handler_params` to configure the handler
-on an endpoint by endpoint basis.  We can even have different handlers handling different requests on each Endpoint.
+This simple examples demonstrates the flexibility the handler system offers.  We can define handlers to accomodate any use case imaginable in Python.  We can use the :meth:`.Endpoint.get_request_handler_params` to configure the handler
+on an endpoint by endpoint basis.
 
 Accessing the Request object
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We've seen how to define a custom handler and how we configure it to process incoming data to our Endpoint.  So what does arrested do with all this stuff?  Whenever a POST, PUT, PATCH request is made to one of your :class:`.Endpoint` arrested will instantiate the ``request`` object and set it on the Endpoint.
-This allows users to later access the handler instance used to process the incoming request.  An example of this in practice is the :meth:`CreateMixin.handle_post_request` method.
+We've seen how to define a custom handler and how we configure it to process incoming data.  So what does arrested do with all this stuff?  Whenever a POST, PUT, PATCH request is made to one of your :class:`.Endpoint` arrested will instantiate the ``request`` object and set it on the Endpoint.
+This allows users to access the handler instance used to process the incoming request.  An example of this in practice is the :meth:`CreateMixin.handle_post_request` method.
 
 .. code-block:: python
 
@@ -600,7 +600,7 @@ Response Handling
 ^^^^^^^^^^^^^^^^^^
 
 Endpoints that return data will typically require that a :class:`.ResponseHandler` be defined on the Endpoint using the response_handler property.  The default :class:`.ResponseHandler` simply attempts to serialize the obj passed to it using ``json.dumps``.
-This works fine in simple cases but when we're dealing with more complex types like SQLAlchemy Models we need something a bit smarter.  In the example application we use the KimResponseHandler.
+This works fine in simple cases but when we're dealing with more complex types like SQLAlchemy Models we need something a bit smarter.
 
 Let's look at implementing a simple :class:`.ResponseHandler` that removes some fields from response data.
 
@@ -653,8 +653,8 @@ Let's look at implementing a simple :class:`.ResponseHandler` that removes some 
 Accessing the Response object
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As we saw with the Request object, Arrested will store the response handler instance against a property on the Endpoint called ``response``.  This can be accessed later to apply additional processing and that sort of thing.
-By default a ResponseHandler is created for any request handled by an Endpoint.  This means that the data generated by a RequestHandler will later be processed and returned by the provided ResponseHandler.  We can see this in action in the :class:`.PutObjectMixin` mixin shown below.
+As we saw with the Request object, Arrested will store the response handler instance against a property on the Endpoint called ``response``.  By default a ResponseHandler is created for any request handled by an Endpoint.
+This means that the data generated by a RequestHandler will later be processed and returned by the provided ResponseHandler.  We can see this in action in the :class:`.PutObjectMixin` mixin shown below.
 
 .. code-block:: python
 
