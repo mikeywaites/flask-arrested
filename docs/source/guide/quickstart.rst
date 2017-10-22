@@ -1,6 +1,6 @@
 .. _quickstart:
 
-Quickstart
+Guide
 ===========
 
 .. module:: arrested

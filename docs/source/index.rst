@@ -121,7 +121,7 @@ Arrested officially supports Python 2.7 & 3.3–3.5
 The User Guide
 --------------
 
-Get started with Flask-Arrested using the quickstart user guide or take a look at the in-depth advanced documentation.
+Get started with Flask-Arrested using the quickstart user guide or take a look at the in-depth API documentation.
 
 .. toctree::
    :maxdepth: 2
@@ -129,11 +129,6 @@ Get started with Flask-Arrested using the quickstart user guide or take a look a
    guide/intro
    guide/install
    guide/quickstart
-
-.. toctree::
-   :maxdepth: 3
-
-   guide/advanced
 
 
 Integrations & Recipies
