@@ -61,7 +61,7 @@ jobs:
             python3 setup.py develop
             py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
       - save_cache:
-          key: py3coverage-{{ .Branch }}-coverage
+          key: py3coverage-{{ .Branch }}-{{ checksum ".coverage" }}
           paths:
             - ".coverage"
 
@@ -79,7 +79,7 @@ jobs:
             python setup.py develop
             py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
       - save_cache:
-          key: py2coverage-{{ .Branch }}-coverage
+          key: py2coverage-{{ .Branch }}-{{ checksum ".coverage" }}
           paths:
             - ".coverage"
 
@@ -107,7 +107,7 @@ jobs:
       - restore_cache:
           keys:
             - py3deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
-            - py3coverage-{{ .Branch }}-coverage
+            - py3coverage-{{ .Branch }}-{{ checksum ".coverage" }}
       - run:
           command: |
             . ~/flask-arrested/py3venv/bin/activate
