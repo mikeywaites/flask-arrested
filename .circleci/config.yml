@@ -61,8 +61,9 @@ jobs:
             python3 setup.py develop
             py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
       - save_cache:
-          key: py3coverage-{{ .Branch }}-{{ checksum ".coverage" }}
+          key: py3testreport-{{ .Branch }}-{{ .Revision }}
           paths:
+            - "py3venv"
             - ".coverage"
 
   test-python2:
@@ -79,8 +80,9 @@ jobs:
             python setup.py develop
             py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
       - save_cache:
-          key: py2coverage-{{ .Branch }}-{{ checksum ".coverage" }}
+          key: py2testreport-{{ .Branch }}-{{ .Revision }}
           paths:
+            - "py2venv"
             - ".coverage"
 
   release:
@@ -104,9 +106,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys:
-            - py3coverage-{{ .Branch }}-{{ checksum ".coverage" }}
-            - py3deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: py3testreport-{{ .Branch }}-{{ .Revision }}
       - run:
           command: |
             . ~/flask-arrested/py3venv/bin/activate
