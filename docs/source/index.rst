@@ -6,7 +6,21 @@
 Flask-Arrested: A Framework For Rapidly Building REST APIs with Flask.
 =======================================================================
 
-Release v\ |version|. (:ref:`Installation <install>`)
+.. image:: https://img.shields.io/pypi/v/arrested.svg
+    :target: https://pypi.python.org/pypi/arrested
+
+.. image:: https://img.shields.io/pypi/l/arrested.svg
+    :target: https://pypi.python.org/pypi/arrested
+
+.. image:: https://img.shields.io/pypi/pyversions/arrested.svg
+    :target: https://pypi.python.org/pypi/arrested
+
+.. image:: https://circleci.com/gh/mikeywaites/flask-arrested/tree/master.svg?style=svg
+    :target: https://circleci.com/gh/mikeywaites/flask-arrested/tree/master
+
+.. image:: https://img.shields.io/readthedocs/arrested/latest.svg
+    :target: http://arrested.readthedocs.io/en/latest/
+
 
 -------------------
 
