@@ -105,8 +105,8 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - py3deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
             - py3coverage-{{ .Branch }}-{{ checksum ".coverage" }}
+            - py3deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           command: |
             . ~/flask-arrested/py3venv/bin/activate
