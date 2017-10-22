@@ -3,6 +3,10 @@ version: 2
 defaults: &defaults
   working_directory: ~/flask-arrested
 
+notify:
+  webhooks:
+    - url: https://webhooks.gitter.im/e/4f299d4d1b02cb3a60b9
+
 jobs:
   build-python3:
     <<: *defaults
