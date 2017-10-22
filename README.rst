@@ -16,9 +16,22 @@ Flask-Arrested: A Framework For Rapidly Building REST APIs with Flask.
 .. image:: https://img.shields.io/readthedocs/arrested/latest.svg
     :target: http://arrested.readthedocs.io/en/latest/
 
+.. image:: https://coveralls.io/repos/github/mikeywaites/flask-arrested/badge.svg?branch=master
+    :target: https://coveralls.io/github/mikeywaites/flask-arrested?branch=master
+
 -------------------
 
-**Introducing Arrested**::
+Pip Install Flask-Arrested
+---------------------------
+
+To install Arrested, simply run this simple command in your terminal of choice::
+
+$ pip install Flask-Arrested
+
+Introducing Arrested
+-----------------------
+
+.. code-block:: python
 
     from flask import Flask
 
@@ -110,7 +123,6 @@ Flask-Arrested: A Framework For Rapidly Building REST APIs with Flask.
     characters_resource.add_endpoint(CharactersIndexEndpoint)
     characters_resource.add_endpoint(CharacterObjectEndpoint)
     api_v1.register_resource(characters_resource)
-
 
 
 Flask-Arrested Features
