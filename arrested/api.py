@@ -4,8 +4,8 @@ __all__ = ['ArrestedAPI']
 
 
 class ArrestedAPI(object):
-    """ArrestedAPI defines versions of your api which :class:`.Endpoint` are registered
-    against.  It acts like ``Flasks``  Blueprint object with a few minor differences.
+    """ArrestedAPI defines versions of your api on which :class:`.Endpoint` are registered
+    It acts like ``Flasks``  Blueprint object with a few minor differences.
     """
 
     def __init__(self, app=None, url_prefix='', before_all_hooks=None,
@@ -52,8 +52,7 @@ class ArrestedAPI(object):
             self.register_all(self.deferred)
 
     def register_resource(self, resource, defer=False):
-        """Register a :class:`.Resource` blueprint object against with
-        the Flask app object.
+        """Register a :class:`.Resource` blueprint object against the Flask app object.
 
         :param resource: :class:`.Resource` or :class:`flask.Blueprint`
             object.
@@ -63,7 +62,7 @@ class ArrestedAPI(object):
 
         **Deferred resource registration**
 
-        Resources can optionally be registered in a deferred manor.  Simply pass
+        Resources can optionally be registered in a deferred manner.  Simply pass
         `defer=True` to :meth:`.ArrestedAPI.register_resource` to attach the resource to
         the API without calling register_blueprint.
 

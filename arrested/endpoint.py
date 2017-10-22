@@ -23,7 +23,7 @@ class Endpoint(MethodView):
     #: A :class:`.ResponseHandler` class
     response_handler = ResponseHandler
 
-    #: A :class:`.ResponseHandler` class
+    #: A :class:`.RequestHandler` class
     request_handler = RequestHandler
 
     #: The URL this endpoint is mapped against. This will build on top of any url_prefix

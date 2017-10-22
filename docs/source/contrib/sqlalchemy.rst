@@ -3,8 +3,9 @@
 Flask-SQLAlchemy
 =================
 
-Arrested comes with built in support for working with Flask-SQLAlchemy.  The SQLAlchemy mixin's provide automatic handling of commiting sessions when saving objects,
-filtering Queries by a models primary key when fetching single objects and the removal objects from the database when deleting.  Simply put, the SQLAlchemy take care of the boring stuff when integrating Arrested with SQLAlchemy.
+Arrested comes with built in support for working with Flask-SQLAlchemy. The SQLAlchemy mixins support automatically committing the database session when saving objects,
+filtering Queries by a model's primary key when fetching single objects and the removal of objects from the database when deleting. Simply put, the SQLAlchemy mixin takes
+care of the boring stuff when integrating Arrested with SQLAlchemy.
 
 .. note::
 
