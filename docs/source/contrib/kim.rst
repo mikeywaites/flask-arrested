@@ -79,4 +79,4 @@ Usage
 So what's changed?  Firstly we are now using the :class:`KimEndpoint <arrested.contrib.kim_arrested.KimEndpoint>` class when defining our Endpoints.  This Custom base Endpoint does the grunt work for us.
 It defines the custome Kim Response and Request handlers and the get_response_handler_params and get_request_handler_params methods to set them up.
 
-This has had some impact on our CharactersIndexEndpoint and CharacterObjectEndpoint too.  We no longer need to manually instantiate the Character model ourselves and we've thankfully removed that really basic validatio from the update_object method.  Kim now provides robust validation of the data coming into our API ensuring data is present and of the correct type.
+This has had some impact on our CharactersIndexEndpoint and CharacterObjectEndpoint too.  We no longer need to manually instantiate the Character model ourselves and we've thankfully removed that really basic validation from the update_object method.  Kim now provides robust validation of the data coming into our API ensuring data is present and of the correct type.

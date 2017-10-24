@@ -27,7 +27,7 @@ The examples used in this guide can be found here `<https://github.com/oldstlabs
 APIs, Resources and Endpoints - Defining your first API
 -------------------------------------------------------------
 
-Flask-Arrested is split into 3 key concepts.  :class:`.ArrestedAPI`'s, :class:`.Resource` and :class:`.Endpoint`.  API's contian multiple Resources.  For example
+Flask-Arrested is split into 3 key concepts.  :class:`.ArrestedAPI`'s, :class:`.Resource` and :class:`.Endpoint`.  APIs contian multiple Resources.  For example
 Our API contains a Characters resource, a Planets resource and so on.  Resources are a collection of Endpoints.  Endpoints define
 the urls inside of our Resources ``/v1/charcaters`` ``/v1/planets/hfyf66775gjgjjf`` etc.
 
@@ -205,9 +205,9 @@ And finally, Delete a Character by id..
 URLS && url_for
 ^^^^^^^^^^^^^^^^
 
-URLS's are automatically defined by Resoruce's and Endpoint's using Flask's built in url_mapping functionality.  We optionally provide Resource with a url_prefix which is applied to all of its registered Endponts.
-We can also specify a URI segment for the Endpoint using the ``url`` parameter.  Endpoint's require that the name attribute is provied.  This is the name used when reversing the url using Flask's ``url_for`` function.  Ie `url_for('news.list')`
-where new is the name given to the Resource and list of the name of one of its' registered endpoints.
+URLSs are automatically defined by Resoruces and Endpoints using Flask's built in url_mapping functionality.  We optionally provide Resource with a url_prefix which is applied to all of it's registered Endponts.
+We can also specify a URI segment for the Endpoint using the ``url`` parameter.  Endpoints require that the name attribute is provied.  This is the name used when reversing the url using Flask's ``url_for`` function.  Ie `url_for('news.list')`
+where new is the name given to the Resource and list of the name of one of its registered endpoints.
 
 
 Getting objects
@@ -241,7 +241,7 @@ Saving objects
 
 
 The CharactersIndexEndpoint also inherits the :class:`.CreateMixin`.  This mixin provides functionality for handling POST requests.  The :class:`.CreateMixin` requires that the :meth:`save_object <CreateMixin.save_object>` method be implemented.
-The save_obejct method will be called with the obj or objects processed by the Endpoint's defined request_handler.
+The save_object method will be called with the obj or objects processed by the Endpoint's defined request_handler.
 
 
 Here's an example Endpoint that store the incoming JSON data in Redis.
@@ -513,7 +513,7 @@ Making a PUT request to ``http://localhost:5000/v1/characters/1`` using curl now
 Handling Requests and Responses
 --------------------------------
 
-Arrested provides a flexible API for handling the data flowing into, and out from your API's.  Each endpoint can have a custom :class:`.RequestHandler` and :class:`ResponseHandler`.  This system provides support for any concievable way of processing data.  Arrested also provides some out of the box integrations with popular
+Arrested provides a flexible API for handling the data flowing into, and out from your APIs.  Each endpoint can have a custom :class:`.RequestHandler` and :class:`ResponseHandler`.  This system provides support for any concievable way of processing data.  Arrested also provides some out of the box integrations with popular
 serialization libraries, such as Kim and Marshmallow.
 
 Request Handling

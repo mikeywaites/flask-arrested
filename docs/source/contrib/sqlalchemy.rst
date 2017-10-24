@@ -71,7 +71,7 @@ DBListMixin
 ~~~~~~~~~~~~~~~~~~~
 
 The :class:`DBListMixin <arrested.contrib.sql_alchemy.DBListMixin>` mixin implments the standard :class:`.GetListMixin` interface.  We'd normally be required to implement the :meth:`.GetListMixin.get_objects` method.  DBListMixin handles this method and instead requires the :meth:`get_query <arrested.contrib.sql_alchemy.DBListMixin.get_query>` method.
-This method should return a Query object opposed to a scalar Python type.  DBListMixin will automatically call ``.all()`` on the Query object for you.  If for some reason you need to handle this yourself you can overwrite the :meth:`get_result <arrested.contrib.sql_alchemy.DBListMixin.get_result>` method.
+This method should return a Query object as opposed to a scalar Python type.  DBListMixin will automatically call ``.all()`` on the Query object for you.  If for some reason you need to handle this yourself you can overwrite the :meth:`get_result <arrested.contrib.sql_alchemy.DBListMixin.get_result>` method.
 
 
 .. code-block:: python
