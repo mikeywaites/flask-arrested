@@ -39,7 +39,7 @@ Arrested is a framework for rapidly building REST API's with Flask.
 Pip Install Flask-Arrested
 ---------------------------
 
-To install Arrested, simply run this simple command in your terminal of choice::
+To install Arrested, simply run this command in your terminal of choice::
 
 $ pip install arrested
 
