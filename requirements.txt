@@ -7,3 +7,4 @@ py-kim
 behave
 behave-http
 mock==2.0.0
+python-coveralls==2.9.1

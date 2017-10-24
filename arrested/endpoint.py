@@ -14,22 +14,56 @@ class Endpoint(MethodView):
     Endpoint inside of a particular resource.
     """
 
+    #: list containing the permitted HTTP methods this endpoint accepts
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+
+    #: The name used to register this endpoint with Flask's url_map
     name = None
+
+    #: A :class:`.ResponseHandler` class
     response_handler = ResponseHandler
+
+    #: A :class:`.RequestHandler` class
     request_handler = RequestHandler
+
+    #: The URL this endpoint is mapped against. This will build on top of any url_prefix
+    #: defined at the API and Resource level
     url = ''
+
+    #: A list of functions called before any specific request handler methods are called
     before_all_hooks = []
+
+    #: A list of functions called before GET requests are dispatched
     before_get_hooks = []
+
+    #: A list of functions called after GET requests are dispatched
     after_get_hooks = []
+
+    #: A list of functions called before POST requests are dispatched
     before_post_hooks = []
+
+    #: A list of functions called after POST requests are dispatched
     after_post_hooks = []
+
+    #: A list of functions called before PUT requests are dispatched
     before_put_hooks = []
+
+    #: A list of functions called after PUT requests are dispatched
     after_put_hooks = []
+
+    #: A list of functions called before PATCH requests are dispatched
     before_patch_hooks = []
+
+    #: A list of functions called after PATCH requests are dispatched
     after_patch_hooks = []
+
+    #: A list of functions called before DELETE requests are dispatched
     before_delete_hooks = []
+
+    #: A list of functions called after DELETE requests are dispatched
     after_delete_hooks = []
+
+    #: A list of functions called after all requests are dispatched
     after_all_hooks = []
 
     def dispatch_request(self, *args, **kwargs):

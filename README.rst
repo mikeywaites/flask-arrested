@@ -1,8 +1,3 @@
-.. Flask-Arrested documentation master file, created by
-   sphinx-quickstart on Sun Feb 26 15:02:48 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Flask-Arrested: A Framework For Rapidly Building REST APIs with Flask.
 =======================================================================
 
@@ -27,10 +22,32 @@ Flask-Arrested: A Framework For Rapidly Building REST APIs with Flask.
 .. image:: https://badges.gitter.im/bruv-io/Arrested.png
     :target: https://gitter.im/bruv-io/Arrested
 
-
 -------------------
 
-**Introducing Arrested**::
+Flask-Arrested Features
+-----------------------------
+
+Arrested is a framework for rapidly building REST API's with Flask.
+
+- Un-Opinionated: Let's you decide "the best way" to implement *your* REST API.
+- Battle Tested: In use across many services in a production environment.
+- Batteries Included! Arrested ships with built in support for popular libraries such as SQLAlchemy, Kim and Marshmallow.  Using something different or have your own tooling you need to support?  Arrested provides a rich API that can be easily customised!
+- Supports any storage backends:  Want to use "hot new database technology X?" No problem!  Arrested can be easily extended to handle all your data needs.
+- Powerful middleware system - Inject logic at any step of the request/response cycle
+
+
+Pip Install Flask-Arrested
+---------------------------
+
+To install Arrested, simply run this command in your terminal of choice::
+
+$ pip install arrested
+
+
+Introducing Arrested
+-----------------------
+
+.. code-block:: python
 
     from flask import Flask
 
@@ -122,52 +139,3 @@ Flask-Arrested: A Framework For Rapidly Building REST APIs with Flask.
     characters_resource.add_endpoint(CharactersIndexEndpoint)
     characters_resource.add_endpoint(CharacterObjectEndpoint)
     api_v1.register_resource(characters_resource)
-
-
-
-Flask-Arrested Features
------------------------------
-
-Arrested is a framework for rapidly building REST API's with Flask.
-
-- Un-Opinionated: Let's you decide "the best way" to implement *your* REST API.
-- Battle Tested: In use across many services in a production environment.
-- Batteries Included! Arrested ships with built in support for popular libraries such as SQLAlchemy, Kim and Marshmallow.  Using something different or have your own tooling you need to support?  Arrested provides a rich API that can be easily customised!
-- Supports any storage backends:  Want to use "hot new database technology X?" No problem!  Arrested can be easily extended to handle all your data needs.
-- Powerful middleware system - Inject logic at any step of the request/response cycle
-
-Arrested officially supports Python 2.7 & 3.3–3.5
-
-The User Guide
---------------
-
-Get started with Flask-Arrested using the quickstart user guide or take a look at the in-depth API documentation.
-
-.. toctree::
-   :maxdepth: 2
-
-   guide/intro
-   guide/install
-   guide/quickstart
-
-
-Integrations & Recipies
-------------------------
-
-.. toctree::
-   :maxdepth: 3
-
-   contrib/sqlalchemy
-   contrib/kim
-   contrib/marshmallow
-
-
-The API Documentation / Guide
------------------------------
-
-Detailed class and method documentation
-
-.. toctree::
-   :maxdepth: 3
-
-   api

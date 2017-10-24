@@ -21,8 +21,7 @@ class Resource(Blueprint):
         :param after_all_hooks: A list of middleware functions that will be applied
             after every request.
 
-        Middleware
-        ~~~~~~~~~~~~~
+        **Middleware**
 
         Arrested supports applying request middleware at every level of the application
         stack.  Resource middleware will be applied for every Endpoint registered on
@@ -71,7 +70,7 @@ class Resource(Blueprint):
             self.init_api(api)
 
     def init_api(self, api):
-        """Registered the instance of :class:`arrested.ArrestedAPI` the :class:`Resource`
+        """Registered the instance of :class:`.ArrestedAPI` the :class:`.Resource`
         is being registered against.
 
         :param api: API instance being the resource is being registered against.
@@ -79,9 +78,9 @@ class Resource(Blueprint):
         self.api = api
 
     def add_endpoint(self, endpoint):
-        """Register an :class:`Endpoint` aginst this resource.
+        """Register an :class:`.Endpoint` aginst this resource.
 
-        :param endpoint: :class:`Endpoint` API Endpoint class
+        :param endpoint: :class:`.Endpoint` API Endpoint class
 
         Usage::
 
