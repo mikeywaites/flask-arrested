@@ -24,6 +24,9 @@ Flask-Arrested: A Framework For Rapidly Building REST APIs with Flask.
 .. image:: https://coveralls.io/repos/github/mikeywaites/flask-arrested/badge.svg?branch=master
     :target: https://coveralls.io/github/mikeywaites/flask-arrested?branch=master
 
+.. image:: https://badges.gitter.im/bruv-io/Arrested.png
+    :target: https://gitter.im/bruv-io/Arrested
+
 
 -------------------
 

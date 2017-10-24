@@ -19,14 +19,30 @@ Flask-Arrested: A Framework For Rapidly Building REST APIs with Flask.
 .. image:: https://coveralls.io/repos/github/mikeywaites/flask-arrested/badge.svg?branch=master
     :target: https://coveralls.io/github/mikeywaites/flask-arrested?branch=master
 
+.. image:: https://badges.gitter.im/bruv-io/Arrested.png
+    :target: https://gitter.im/bruv-io/Arrested
+
 -------------------
+
+Flask-Arrested Features
+-----------------------------
+
+Arrested is a framework for rapidly building REST API's with Flask.
+
+- Un-Opinionated: Let's you decide "the best way" to implement *your* REST API.
+- Battle Tested: In use across many services in a production environment.
+- Batteries Included! Arrested ships with built in support for popular libraries such as SQLAlchemy, Kim and Marshmallow.  Using something different or have your own tooling you need to support?  Arrested provides a rich API that can be easily customised!
+- Supports any storage backends:  Want to use "hot new database technology X?" No problem!  Arrested can be easily extended to handle all your data needs.
+- Powerful middleware system - Inject logic at any step of the request/response cycle
+
 
 Pip Install Flask-Arrested
 ---------------------------
 
 To install Arrested, simply run this simple command in your terminal of choice::
 
-$ pip install Flask-Arrested
+$ pip install arrested
+
 
 Introducing Arrested
 -----------------------
@@ -123,15 +139,3 @@ Introducing Arrested
     characters_resource.add_endpoint(CharactersIndexEndpoint)
     characters_resource.add_endpoint(CharacterObjectEndpoint)
     api_v1.register_resource(characters_resource)
-
-
-Flask-Arrested Features
------------------------------
-
-Arrested is a framework for rapidly building REST API's with Flask.
-
-- Un-Opinionated: Let's you decide "the best way" to implement *your* REST API.
-- Battle Tested: In use across many services in a production environment.
-- Batteries Included! Arrested ships with built in support for popular libraries such as SQLAlchemy, Kim and Marshmallow.  Using something different or have your own tooling you need to support?  Arrested provides a rich API that can be easily customised!
-- Supports any storage backends:  Want to use "hot new database technology X?" No problem!  Arrested can be easily extended to handle all your data needs.
-- Powerful middleware system - Inject logic at any step of the request/response cycle

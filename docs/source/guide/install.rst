@@ -12,4 +12,4 @@ Pip Install Flask-Arrested
 
 To install Arrested, simply run this simple command in your terminal of choice::
 
-$ pip install Flask-Arrested
+$ pip install arrested
