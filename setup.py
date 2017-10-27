@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='arrested',
-    version='0.1.0-dev3',
+    version='0.1.1',
     author='Mikey Waites',
     author_email='mike@oldstlabs.com',
     url='https://github.com/mikeywaites/flask-arrested',
