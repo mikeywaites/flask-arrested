@@ -30,23 +30,17 @@ Flask-Arrested: A Framework For Rapidly Building REST APIs with Flask.
 
 -------------------
 
-**Introducing Arrested**::
+Introducing Arrested
+---------------------
 
-    from flask import Flask
+Take the pain out of REST API creation with Arrested - batteries included for quick wins, highly extensible for specialist requirements.
 
-    from arrested import (
-        ArrestedAPI, Resource, Endpoint, GetListMixin, CreateMixin,
-        GetObjectMixin, PutObjectMixin, DeleteObjectMixin, ResponseHandler
-    )
+.. code-block:: python
 
-    from example.hanlders import DBRequestHandler, character_serializer
+    from arrested import ArrestedAPI, Resource, Endpoint, GetListMixin, CreateMixin,
     from example.models import db, Character
 
-    app = Flask(__name__)
-    api_v1 = ArrestedAPI(app, url_prefix='/v1')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////opt/code/example/starwars.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    db.init_app(app)
+    api_v1 = ArrestedAPI(url_prefix='/v1')
 
     characters_resource = Resource('characters', __name__, url_prefix='/characters')
 
@@ -55,12 +49,6 @@ Flask-Arrested: A Framework For Rapidly Building REST APIs with Flask.
 
         name = 'list'
         many = True
-        response_handler = DBResponseHandler
-
-        def get_response_handler_params(self, **params):
-
-            params['serializer'] = character_serializer
-            return params
 
         def get_objects(self):
 
@@ -75,54 +63,8 @@ Flask-Arrested: A Framework For Rapidly Building REST APIs with Flask.
             return character
 
 
-    class CharacterObjectEndpoint(Endpoint, GetObjectMixin,
-                                  PutObjectMixin, DeleteObjectMixin):
-
-        name = 'object'
-        url = '/<string:obj_id>'
-        response_handler = DBResponseHandler
-
-        def get_response_handler_params(self, **params):
-
-            params['serializer'] = character_serializer
-            return params
-
-        def get_object(self):
-
-            obj_id = self.kwargs['obj_id']
-            obj = db.session.query(Character).filter(Character.id == obj_id).one_or_none()
-            if not obj:
-                payload = {
-                    "message": "Character object not found.",
-                }
-                self.return_error(404, payload=payload)
-
-            return obj
-
-        def update_object(self, obj):
-
-            data = self.request.data
-            allowed_fields = ['name']
-
-            for key, val in data.items():
-                if key in allowed_fields:
-                    setattr(obj, key, val)
-
-            db.session.add(obj)
-            db.session.commit()
-
-            return obj
-
-        def delete_object(self, obj):
-
-            db.session.delete(obj)
-            db.session.commit()
-
-
     characters_resource.add_endpoint(CharactersIndexEndpoint)
-    characters_resource.add_endpoint(CharacterObjectEndpoint)
     api_v1.register_resource(characters_resource)
-
 
 
 Flask-Arrested Features
@@ -137,6 +79,26 @@ Arrested is a framework for rapidly building REST API's with Flask.
 - Powerful middleware system - Inject logic at any step of the request/response cycle
 
 Arrested officially supports Python 2.7 & 3.3–3.5
+
+
+🚀 Get started in under a minute..
+-----------------------------------------
+
+.. raw:: html
+
+    <script type="text/javascript" src="https://asciinema.org/a/UbBr97GeGlLNMTT64HNvjF3Ql.js" id="asciicast-UbBr97GeGlLNMTT64HNvjF3Ql" async data-autoplay="true" data-size="small" data-rows=20></script>
+
+Use the Flask-Arrested cookie cutter to create a basic API to get you started in 4 simple commands. `<https://github.com/mikeywaites/arrested-cookiecutter>`_.
+
+
+.. code-block:: shell
+
+    $ cookiecutter gh:mikeywaites/arrested-cookiecutter
+    $ cd arrested-users-api
+    $ docker-compose up -d api
+    $ curl -u admin:secret localhost:8080/v1/users | python -m json.tool
+
+----------------
 
 The User Guide
 --------------
