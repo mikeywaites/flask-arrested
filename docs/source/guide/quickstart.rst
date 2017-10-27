@@ -17,11 +17,14 @@ This tutorial steps through creating a simple Star Wars themed REST API using Ar
 Example Application
 --------------------
 
-The examples used in this guide can be found here `<https://github.com/oldstlabs/flask-arrested/tree/master/example>`_.
+The examples used in this guide can be found here `<https://github.com/mikeywaites/flask-arrested/tree/master/example>`_.
 
 .. note::
 
     To follow along with the example you will need to install Docker for your operating system.  Find out how here `<https://docker.com>`_.
+
+
+👋 Alternatively you can use the Arrested cookiecutter to create a working API in 4 simple commands. `<https://github.com/mikeywaites/arrested-cookiecutter>`_.
 
 
 APIs, Resources and Endpoints - Defining your first API
