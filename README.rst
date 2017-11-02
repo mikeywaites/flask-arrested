@@ -72,8 +72,6 @@ Arrested is a framework for rapidly building REST API's with Flask.
 - Supports any storage backends:  Want to use "hot new database technology X?" No problem!  Arrested can be easily extended to handle all your data needs.
 - Powerful middleware system - Inject logic at any step of the request/response cycle
 
-Arrested officially supports Python 2.7 & 3.3–3.5
-
 
 🚀 Get started in under a minute..
 -----------------------------------------
