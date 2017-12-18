@@ -145,6 +145,61 @@ def test_return_error_response():
         assert resp.response.data == b'{"error": true}'
 
 
+def test_return_error_response_with_headers():
+    endpoint = Endpoint()
+    try:
+        endpoint.return_error(400, payload={'error': True}, headers={'X-Test': 'foo'})
+    except HTTPException as resp:
+        assert resp.response.headers['X-Test'] == 'foo'
+
+
+def test_return_error_response_as_json_false():
+    """Ensure that when as_json=False is passed to return_error that the method will
+    not attempt to serialize the provided payload to JSON
+    """
+    endpoint = Endpoint()
+    payload = json.dumps({'error': True})
+    try:
+        endpoint.return_error(
+            400,
+            payload=payload,
+            as_json=False,
+            headers={'X-Test': 'foo'}
+        )
+    except HTTPException as resp:
+        assert resp.response.headers['X-Test'] == 'foo'
+
+
+def test_return_error_default_content_type():
+    """ensure that the default content type returned with the response is application/json
+    """
+    endpoint = Endpoint()
+    try:
+        endpoint.return_error(
+            400,
+            payload={'error': True},
+        )
+    except HTTPException as resp:
+        assert resp.response.headers['Content-Type'] == 'application/json'
+
+
+def test_return_error_custom_content_type():
+    """ensure that the a custom content type returned with the
+    response is application/json
+    """
+    endpoint = Endpoint()
+    payload = b'<html><body>Error</body></html>'
+    try:
+        endpoint.return_error(
+            400,
+            payload=payload,
+            content_type='text/html',
+            as_json=False
+        )
+    except HTTPException as resp:
+        assert resp.response.data == payload
+
+
 def test_get_calls_handle_get_request():
     class MyEndpoint(Endpoint):
 
