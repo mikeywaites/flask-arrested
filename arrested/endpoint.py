@@ -173,9 +173,31 @@ class Endpoint(MethodView):
 
         return self.request_handler(self, **self.get_request_handler_params())
 
-    def return_error(self, status, payload=None):
+    def return_error(self, status, payload=None, as_json=True,
+                     headers=None, content_type='application/json'):
         """Error handler called by request handlers when an error occurs and the request
         should be aborted.
+
+        By default, the error is returned using the application/json content type and
+        The payload is serialized to JSON.  If you want to return a different
+        content type you can do so using the content_type kwarg.  You can stop the
+        payload being serialized as JSON by passing as_json=False
+
+        *A special note about METHOD NOT ALLOWED.*
+
+        When return_error is called with a 405 status no response is created.  Werkzeug's
+        exception that handles this response does not allow a response body to be
+        provided.
+
+        See the link below for more info.
+        http://werkzeug.pocoo.org/docs/0.12/exceptions/#werkzeug.exceptions.MethodNotAllowed
+
+        :param status: HTTP status code for this error
+        :param payload: Response body. When as_json=True is passed to this function
+            the payload will be serialized as a JSON string.
+        :param as_json: Serialize the payload as a JSON string
+        :param headers: a dict of headers to return with response
+        :param content_type: specify the content type to return with the response
 
         Usage::
 
@@ -189,14 +211,18 @@ class Endpoint(MethodView):
 
                 return self.return_create_response()
         """
-        resp = None
-        if payload is not None:
-            payload = json.dumps(payload)
-            resp = self.make_response(payload, status=status)
 
         if status in [405]:
             abort(status)
         else:
+
+            if as_json:
+                payload = json.dumps(payload)
+
+            resp = self.make_response(
+                payload, status=status, headers=headers, mime=content_type
+            )
+
             abort(status, response=resp)
 
     def get(self, *args, **kwargs):
