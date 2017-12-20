@@ -20,6 +20,19 @@ class Handler(object):
         self._errors = None
         self.payload_key = payload_key
 
+    def handle_error(self, status, errors):
+        """Generate an error response returning a payload containing validation errors
+        that ocurred during this request.
+
+        :param status: HTTP status code
+        :param errors: JSON serializable object
+        """
+        payload = {
+            "message": "Invalid or incomplete data provided.",
+            "errors": errors
+        }
+        self.endpoint.return_error(status, payload=payload)
+
     def handle(self, data, **kwargs):
         """Invoke the handler to process the provided data.  Concrete classes
         should override this method to provide specific capabilties for the

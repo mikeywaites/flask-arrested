@@ -123,7 +123,7 @@ class KimRequestHandler(KimHandler, RequestHandler):
     def handle(self, data, error_status=422, **kwargs):
         """Run marshalling for the specified mapper_class.
 
-        * TODO(mike) Allows users to control the error reponse generated.
+        * TODO(mike) Allow users to control the error reponse generated.
 
         Supports both .marshal and .many().marshal Kim interfaces.  Handles errors raised
         during marshalling and automatically returns a HTTP error response.
