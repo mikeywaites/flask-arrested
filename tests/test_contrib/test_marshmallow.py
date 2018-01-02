@@ -55,7 +55,7 @@ def test_get_schema():
     endpoint = CharactersEndpoint()
     handler = MarshmallowHandler(endpoint, schema_class=MySchema)
 
-    handler.schema == MySchema
+    assert handler.schema == MySchema
 
 
 def test_marshmallow_handler_sets_opts():
