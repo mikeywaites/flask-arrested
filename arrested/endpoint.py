@@ -66,35 +66,80 @@ class Endpoint(MethodView):
     #: A list of functions called after all requests are dispatched
     after_all_hooks = []
 
+    def process_before_request_hooks(self):
+        """Process the list of before_{method}_hooks and the before_all_hooks. The hooks
+        will be processed in the following order
+
+        1 - any before_all_hooks defined on the :class:`arrested.ArrestedAPI` object
+        2 - any before_all_hooks defined on the :class:`arrested.Resource` object
+        3 - any before_all_hooks defined on the :class:`arrested.Endpoint` object
+        4 - any before_{method}_hooks defined on the :class:`arrested.Endpoint` object
+        """
+
+        hooks = []
+
+        if self.resource:
+            hooks.extend(self.resource.api.before_all_hooks)
+            hooks.extend(self.resource.before_all_hooks)
+
+        hooks.extend(self.before_all_hooks)
+        hooks.extend(
+            getattr(
+                self,
+                'before_{method}_hooks'.format(method=self.meth),
+                []
+            )
+        )
+
+        for hook in chain(hooks):
+            hook(self)
+
+    def process_after_request_hooks(self, resp):
+        """Process the list of before_{method}_hooks and the before_all_hooks. The hooks
+        will be processed in the following order
+
+        1 - any after_{method}_hooks defined on the :class:`arrested.Endpoint` object
+        2 - any after_all_hooks defined on the :class:`arrested.Endpoint` object
+        2 - any after_all_hooks defined on the :class:`arrested.Resource` object
+        4 - any after_all_hooks defined on the :class:`arrested.ArrestedAPI` object
+        """
+
+        hooks = []
+        meth_hooks = getattr(
+            self,
+            'after_{method}_hooks'.format(method=self.meth),
+            []
+        )
+
+        hooks.extend(meth_hooks)
+        hooks.extend(self.after_all_hooks)
+
+        if self.resource:
+            hooks.extend(self.resource.after_all_hooks)
+            hooks.extend(self.resource.api.after_all_hooks)
+
+        for hook in chain(hooks):
+            resp = hook(self, resp)
+
+        return resp
+
     def dispatch_request(self, *args, **kwargs):
         """Dispatch the incoming HTTP request to the appropriate handler.
         """
         self.args = args
         self.kwargs = kwargs
-        meth = request.method.lower()
+        self.meth = request.method.lower()
+        self.resource = current_app.blueprints.get(request.blueprint, None)
 
-        if request.method not in self.methods:
-            self.return_error(405)
+        if not any([self.meth in self.methods, self.meth.upper() in self.methods]):
+            return self.return_error(405)
 
-        resource = current_app.blueprints.get(request.blueprint, None)
-        if resource:
-            for hook in chain(resource.api.before_all_hooks, resource.before_all_hooks):
-                hook(self)
-
-        before_hooks = getattr(self, 'before_{method}_hooks'.format(method=meth))
-        for hook in before_hooks:
-            hook(self)
+        self.process_before_request_hooks()
 
         resp = super(Endpoint, self).dispatch_request(*args, **kwargs)
         resp = self.make_response(resp)
 
-        after_hooks = getattr(self, 'after_{method}_hooks'.format(method=meth))
-        for hook in after_hooks:
-            resp = hook(self, resp)
-
-        if resource:
-            for hook in chain(resource.after_all_hooks, resource.api.after_all_hooks):
-                resp = hook(self, resp)
+        resp = self.process_after_request_hooks(resp)
 
         return resp
 

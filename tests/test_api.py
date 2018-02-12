@@ -130,7 +130,6 @@ def test_api_request_middleware(app, client):
     )
 
     resp = client.get(url_for('example.test'))
-    print(resp.data)
     assert resp.data == b'request|resource_after|api_after'
     assert evts == ['api_before', 'resource_before', 'resource_after', 'api_after']
 

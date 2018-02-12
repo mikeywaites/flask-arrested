@@ -5,6 +5,7 @@ from mock import patch, MagicMock
 from flask import Response
 from werkzeug.exceptions import HTTPException
 from arrested import (
+    ArrestedAPI, Resource,
     Endpoint, ResponseHandler, GetListMixin,
     CreateMixin, PutObjectMixin, PatchObjectMixin
 )
@@ -145,6 +146,23 @@ def test_return_error_response():
         assert resp.response.data == b'{"error": true}'
 
 
+def test_endpoint_dispatch_request_method_not_allowed_returns_error(app):
+
+    class MyEndpoint(Endpoint, GetListMixin):
+
+        methods = ["GET"]
+
+        def handle_get_request(self):
+            pass
+
+    with patch.object(MyEndpoint, 'return_error') as mock_return_error:
+
+        with app.test_request_context('/test', method='POST'):
+            MyEndpoint().dispatch_request()
+
+            mock_return_error.assert_called_once_with(405)
+
+
 def test_get_calls_handle_get_request():
     class MyEndpoint(Endpoint):
 
@@ -155,38 +173,6 @@ def test_get_calls_handle_get_request():
     with patch.object(MyEndpoint, 'handle_get_request', return_value=data) as mocked:
         MyEndpoint().get()
         mocked.assert_called_once()
-
-
-def test_before_get_hooks(app):
-
-    log_request = MagicMock(return_value=None)
-
-    class MyEndpoint(Endpoint, GetListMixin):
-
-        before_get_hooks = [log_request, ]
-
-        def get_objects(self):
-            return [{'foo': 'bar'}]
-
-    MyEndpoint().dispatch_request()
-    log_request.assert_called_once()
-
-
-def test_after_get_hooks(app):
-
-    def set_headers(endpoint, response):
-        response.headers.add('X-Test', 1)
-        return response
-
-    class MyEndpoint(Endpoint, GetListMixin):
-
-        after_get_hooks = [set_headers]
-
-        def get_objects(self):
-            return [{'foo': 'bar'}]
-
-    resp = MyEndpoint().dispatch_request()
-    assert 'X-Test' in resp.headers
 
 
 def test_post_calls_handle_post_request():
@@ -201,40 +187,6 @@ def test_post_calls_handle_post_request():
         _mock.assert_called_once()
 
 
-def test_before_post_hooks(app):
-
-    log_request = MagicMock(return_value=None)
-
-    class MyEndpoint(Endpoint, CreateMixin):
-
-        before_post_hooks = [log_request, ]
-
-        def save_object(self, obj):
-            return obj
-
-    with app.test_request_context('/test', method='POST'):
-        MyEndpoint().dispatch_request()
-        log_request.assert_called_once()
-
-
-def test_after_post_hooks(app):
-
-    def set_headers(endpoint, response):
-        response.headers.add('X-Test', 1)
-        return response
-
-    class MyEndpoint(Endpoint, CreateMixin):
-
-        after_post_hooks = [set_headers]
-
-        def save_object(self, obj):
-            return obj
-
-    with app.test_request_context('/test', method='POST'):
-        resp = MyEndpoint().dispatch_request()
-        assert 'X-Test' in resp.headers
-
-
 def test_put_calls_handle_put_request():
     class MyEndpoint(Endpoint):
 
@@ -245,48 +197,6 @@ def test_put_calls_handle_put_request():
     with patch.object(MyEndpoint, 'handle_put_request', return_value=data) as _mock:
         MyEndpoint().put()
         _mock.assert_called_once()
-
-
-def test_before_put_hooks(app):
-
-    log_request = MagicMock(return_value=None)
-
-    class MyEndpoint(Endpoint, PutObjectMixin):
-
-        before_put_hooks = [log_request, ]
-
-        def get_object(self):
-
-            return {'foo': 'bar'}
-
-        def update_object(self, obj):
-            return obj
-
-    with app.test_request_context('/test', method='PUT'):
-        MyEndpoint().dispatch_request()
-        log_request.assert_called_once()
-
-
-def test_after_put_hooks(app):
-
-    def set_headers(endpoint, response):
-        response.headers.add('X-Test', 1)
-        return response
-
-    class MyEndpoint(Endpoint, PutObjectMixin):
-
-        after_put_hooks = [set_headers]
-
-        def get_object(self):
-
-            return {'foo': 'bar'}
-
-        def update_object(self, obj):
-            return obj
-
-    with app.test_request_context('/test', method='PUT'):
-        resp = MyEndpoint().dispatch_request()
-        assert 'X-Test' in resp.headers
 
 
 def test_patch_calls_handle_patch_request():
@@ -301,46 +211,187 @@ def test_patch_calls_handle_patch_request():
         _mock.assert_called_once()
 
 
-def test_before_patch_hooks(app):
+def test_endpoint_dispatch_request_method_calls_process_before_request_hooks(app):
+
+    class MyEndpoint(Endpoint, GetListMixin):
+
+        methods = ["GET"]
+
+        def handle_get_request(self):
+            pass
+
+    with patch.object(Endpoint, 'process_before_request_hooks') as mock_before_hooks:
+        MyEndpoint().dispatch_request()
+        mock_before_hooks.assert_called_once_with()
+
+
+def test_endpoint_dispatch_request_method_calls_process_after_request_hooks(app):
+
+    mock_response = MagicMock(spec=Response)
+
+    class MyEndpoint(Endpoint, GetListMixin):
+
+        methods = ["GET"]
+
+        def handle_get_request(self):
+            return mock_response
+
+    with patch.object(Endpoint, 'process_after_request_hooks') as mock_after_hooks:
+        MyEndpoint().dispatch_request()
+        mock_after_hooks.assert_called_once_with(mock_response)
+
+
+def test_process_before_request_hooks_processed_in_order(app):
+
+    call_sequence = []
+
+    def test_hook(type_, sequence):
+
+        def hook(endpoint):
+            sequence.append(type_)
+
+        return hook
+
+    api_hook = test_hook('api', call_sequence)
+    resource_hook = test_hook('resource', call_sequence)
+    endpoint_hook = test_hook('endpoint', call_sequence)
+    endpoint_get_hook = test_hook('endpoint_get', call_sequence)
+
+    my_api = ArrestedAPI(before_all_hooks=[api_hook], url_prefix='/')
+    my_api.init_app(app)
+    my_resource = Resource('test', __name__, before_all_hooks=[resource_hook])
+
+    class MyEndpoint(Endpoint):
+
+        before_all_hooks = [endpoint_hook]
+        before_get_hooks = [endpoint_get_hook]
+        url = ''
+
+    my_resource.add_endpoint(Endpoint)
+    my_api.register_resource(my_resource)
+    endpoint = MyEndpoint()
+    endpoint.resource = my_resource
+    endpoint.meth = 'get'
+
+    endpoint.process_before_request_hooks()
+
+    assert call_sequence == ['api', 'resource', 'endpoint', 'endpoint_get']
+
+
+def test_process_before_hooks_no_resource(app):
 
     log_request = MagicMock(return_value=None)
 
-    class MyEndpoint(Endpoint, PatchObjectMixin):
+    class MyEndpoint(Endpoint, GetListMixin):
 
-        before_patch_hooks = [log_request, ]
+        before_get_hooks = [log_request, ]
 
-        def get_object(self):
+        def get_objects(self):
+            return [{'foo': 'bar'}]
 
-            return {'foo': 'bar'}
+    endpoint = MyEndpoint()
+    endpoint.resource = None
+    endpoint.meth = 'get'
 
-        def patch_object(self, obj):
-            return obj
-
-    with app.test_request_context('/test', method='PATCH'):
-        MyEndpoint().dispatch_request()
-        log_request.assert_called_once()
+    endpoint.process_before_request_hooks()
+    log_request.assert_called_once()
 
 
-def test_after_patch_hooks(app):
+def test_process_before_hooks_request_meth_not_handled(app):
 
-    def set_headers(endpoint, response):
-        response.headers.add('X-Test', 1)
-        return response
+    log_request = MagicMock(return_value=None)
 
-    class MyEndpoint(Endpoint, PatchObjectMixin):
+    class MyEndpoint(Endpoint, GetListMixin):
 
-        after_patch_hooks = [set_headers]
+        before_get_hooks = [log_request, ]
 
-        def get_object(self):
+        def get_objects(self):
+            return [{'foo': 'bar'}]
 
-            return {'foo': 'bar'}
+    endpoint = MyEndpoint()
+    endpoint.resource = None
+    endpoint.meth = 'options'
 
-        def patch_object(self, obj):
-            return obj
+    endpoint.process_before_request_hooks()
+    assert not log_request.called
 
-    with app.test_request_context('/test', method='PATCH'):
-        resp = MyEndpoint().dispatch_request()
-        assert 'X-Test' in resp.headers
+
+def test_process_after_request_hooks_processed_in_order(app):
+
+    call_sequence = []
+
+    def test_hook(type_, sequence):
+
+        def hook(endpoint, resp):
+            sequence.append(type_)
+
+        return hook
+
+    api_hook = test_hook('api', call_sequence)
+    resource_hook = test_hook('resource', call_sequence)
+    endpoint_hook = test_hook('endpoint', call_sequence)
+    endpoint_get_hook = test_hook('endpoint_get', call_sequence)
+
+    my_api = ArrestedAPI(after_all_hooks=[api_hook], url_prefix='/')
+    my_api.init_app(app)
+    my_resource = Resource('test', __name__, after_all_hooks=[resource_hook])
+
+    class MyEndpoint(Endpoint):
+
+        after_all_hooks = [endpoint_hook]
+        after_get_hooks = [endpoint_get_hook]
+        url = ''
+
+    my_resource.add_endpoint(Endpoint)
+    my_api.register_resource(my_resource)
+    endpoint = MyEndpoint()
+    endpoint.resource = my_resource
+    endpoint.meth = 'get'
+
+    resp = MagicMock(spec=Response())
+    endpoint.process_after_request_hooks(resp)
+
+    assert call_sequence == ['endpoint_get', 'endpoint', 'resource', 'api']
+
+
+def test_process_after_hooks_no_resource(app):
+
+    log_request = MagicMock(return_value=None)
+
+    class MyEndpoint(Endpoint, GetListMixin):
+
+        after_get_hooks = [log_request, ]
+
+        def get_objects(self):
+            return [{'foo': 'bar'}]
+
+    endpoint = MyEndpoint()
+    endpoint.resource = None
+    endpoint.meth = 'get'
+
+    resp = MagicMock(spec=Response())
+    endpoint.process_after_request_hooks(resp)
+    log_request.assert_called_once()
+
+
+def test_process_after_hooks_request_meth_not_handled(app):
+
+    log_request = MagicMock(return_value=None)
+
+    class MyEndpoint(Endpoint, GetListMixin):
+
+        after_get_hooks = [log_request, ]
+
+        def get_objects(self):
+            return [{'foo': 'bar'}]
+
+    endpoint = MyEndpoint()
+    endpoint.resource = None
+    endpoint.meth = 'options'
+
+    resp = MagicMock(spec=Response())
+    endpoint.process_after_request_hooks(resp)
+    assert not log_request.called
 
 
 def test_delete_calls_handle_delete_request():
