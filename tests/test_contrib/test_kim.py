@@ -64,12 +64,14 @@ def test_kim_handler_sets_opts():
         mapper_kwargs={'foo': 'bar'},
         role='test',
         many=True,
-        raw=True)
+        raw=True,
+        error_status=400)
     assert handler.mapper_class == MyMapper
     assert handler.mapper_kwargs == {'foo': 'bar'}
     assert handler.role == 'test'
     assert handler.many is True
     assert handler.raw is True
+    assert handler.error_status == 400
 
 
 def test_kim_handler_default_opts():
@@ -81,6 +83,7 @@ def test_kim_handler_default_opts():
     assert handler.role == '__default__'
     assert handler.many is False
     assert handler.raw is False
+    assert handler.error_status == 422
 
 
 def test_kim_response_handler_with_many():
@@ -187,10 +190,11 @@ def test_kim_request_handler_with_custom_error_status():
 
     data = [{'id': 1}, {'name': 'test 2'}]
     endpoint = CharactersEndpoint()
-    handler = KimRequestHandler(endpoint, mapper_class=MyMapper, many=True)
+    handler = KimRequestHandler(
+        endpoint, mapper_class=MyMapper, many=True, error_status=400)
 
     try:
-        handler.handle(data, error_status=400)
+        handler.handle(data)
         assert False, 'Did not raise UnprocessableEntity'
     except BadRequest as resp:
         assert resp.response.data == \
