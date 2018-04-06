@@ -23,6 +23,8 @@ class KimHandler(Handler):
             marshaling.
         :param many: Pass the many option to Kim when marshaling or serializing.
         :param raw: Pass the raw option to Kim when marshaling or serializing.
+        :param error_status: Set the HTTP status returned in the event of a
+            MappingInvalid on marshaling
         :returns: None
         """
         super(KimHandler, self).__init__(endpoint, *args, **params)
@@ -34,6 +36,7 @@ class KimHandler(Handler):
         self.raw = params.pop('raw', False)
         self.obj = params.pop('obj', None)
         self.partial = params.pop('partial', False)
+        self.error_status = params.pop('error_status', 422)
 
     @property
     def mapper(self):
@@ -120,10 +123,8 @@ class KimRequestHandler(KimHandler, RequestHandler):
                 )
     """
 
-    def handle(self, data, error_status=422, **kwargs):
+    def handle(self, data, **kwargs):
         """Run marshalling for the specified mapper_class.
-
-        * TODO(mike) Allows users to control the error reponse generated.
 
         Supports both .marshal and .many().marshal Kim interfaces.  Handles errors raised
         during marshalling and automatically returns a HTTP error response.
@@ -149,7 +150,7 @@ class KimRequestHandler(KimHandler, RequestHandler):
                 "message": "Invalid or incomplete data provided.",
                 "errors": e.errors
             }
-            self.endpoint.return_error(error_status, payload=payload)
+            self.endpoint.return_error(self.error_status, payload=payload)
 
 
 class KimEndpoint(Endpoint):
