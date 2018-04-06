@@ -123,6 +123,19 @@ class KimRequestHandler(KimHandler, RequestHandler):
                 )
     """
 
+    def handle_error(self, exp):
+        """Called if a Mapper returns MappingInvalid. Should handle the error
+        and return it in the appropriate format, can be overridden in order
+        to change the error format.
+
+        :param exp: MappingInvalid exception raised
+        """
+        payload = {
+            "message": "Invalid or incomplete data provided.",
+            "errors": exp.errors
+        }
+        self.endpoint.return_error(self.error_status, payload=payload)
+
     def handle(self, data, **kwargs):
         """Run marshalling for the specified mapper_class.
 
@@ -146,11 +159,7 @@ class KimRequestHandler(KimHandler, RequestHandler):
                     **self.mapper_kwargs
                 ).marshal(role=self.role)
         except MappingInvalid as e:
-            payload = {
-                "message": "Invalid or incomplete data provided.",
-                "errors": e.errors
-            }
-            self.endpoint.return_error(self.error_status, payload=payload)
+            self.handle_error(e)
 
 
 class KimEndpoint(Endpoint):
