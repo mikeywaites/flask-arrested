@@ -1,12 +1,18 @@
 Changelog
 ========================
 
-v1.0.1
+v0.1.3
+-----------------------
+
+* Allow error_status to be overridden on Kim handler
+* Introduce KimRequestHandler.handle_error() for entirely custom error handling
+
+v0.1.1
 -----------------------
 
 * Fixed issue with Endpoint middleware. #11
 
-v1.0.0
+v0.1.0
 -----------------------
 
 Official release of Arrested.
