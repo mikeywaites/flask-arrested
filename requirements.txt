@@ -1,6 +1,6 @@
-pytest==3.2.1
+pytest==5.2.2
 sphinx
-pytest-cov
+pytest-cov==2.8.1
 ipdb
 flask_sqlalchemy
 py-kim
