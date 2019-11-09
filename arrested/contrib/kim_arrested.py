@@ -5,7 +5,7 @@ from ..handlers import Handler, RequestHandler, ResponseHandler
 from ..endpoint import Endpoint
 
 
-__all__ = ['KimHandler', 'KimRequestHandler', 'KimResponseHandler', 'KimEndpoint']
+__all__ = ["KimHandler", "KimRequestHandler", "KimResponseHandler", "KimEndpoint"]
 
 
 class KimHandler(Handler):
@@ -29,14 +29,14 @@ class KimHandler(Handler):
         """
         super(KimHandler, self).__init__(endpoint, *args, **params)
 
-        self.mapper_class = params.pop('mapper_class', None)
-        self.mapper_kwargs = params.pop('mapper_kwargs', {})
-        self.role = params.pop('role', '__default__')
-        self.many = params.pop('many', False)
-        self.raw = params.pop('raw', False)
-        self.obj = params.pop('obj', None)
-        self.partial = params.pop('partial', False)
-        self.error_status = params.pop('error_status', 422)
+        self.mapper_class = params.pop("mapper_class", None)
+        self.mapper_kwargs = params.pop("mapper_kwargs", {})
+        self.role = params.pop("role", "__default__")
+        self.many = params.pop("many", False)
+        self.raw = params.pop("raw", False)
+        self.obj = params.pop("obj", None)
+        self.partial = params.pop("partial", False)
+        self.error_status = params.pop("error_status", 422)
 
     @property
     def mapper(self):
@@ -46,7 +46,7 @@ class KimHandler(Handler):
         :returns: Kim Mapper class
         """
         if self.mapper_class is None:
-            raise Exception('KimHandler requires a Kim mapper_class')
+            raise Exception("KimHandler requires a Kim mapper_class")
 
         return self.mapper_class
 
@@ -132,7 +132,7 @@ class KimRequestHandler(KimHandler, RequestHandler):
         """
         payload = {
             "message": "Invalid or incomplete data provided.",
-            "errors": exp.errors
+            "errors": exp.errors,
         }
         self.endpoint.return_error(self.error_status, payload=payload)
 
@@ -153,10 +153,7 @@ class KimRequestHandler(KimHandler, RequestHandler):
                 )
             else:
                 return self.mapper(
-                    data=data,
-                    obj=self.obj,
-                    partial=self.partial,
-                    **self.mapper_kwargs
+                    data=data, obj=self.obj, partial=self.partial, **self.mapper_kwargs
                 ).marshal(role=self.role)
         except MappingInvalid as e:
             self.handle_error(e)
@@ -169,20 +166,20 @@ class KimEndpoint(Endpoint):
 
     many = False
     mapper_class = None
-    serialize_role = '__default__'
-    marshal_role = '__default__'
+    serialize_role = "__default__"
+    marshal_role = "__default__"
     response_handler = KimResponseHandler
     request_handler = KimRequestHandler
 
     def _is_marshal_request(self):
         """Return a boolean indicating wether the request is a POST PATCH or PUT request
         """
-        return request.method in ['POST', 'PATCH', 'PUT']
+        return request.method in ["POST", "PATCH", "PUT"]
 
     def is_partial(self):
         """Return a boolean indicating if this marshal request is providing partial data
         """
-        return request.method == 'PATCH'
+        return request.method == "PATCH"
 
     def get_response_handler_params(self, **params):
         """Return a config object that will be used to configure the KimResponseHandler
@@ -192,8 +189,8 @@ class KimEndpoint(Endpoint):
         """
 
         params = super(KimEndpoint, self).get_response_handler_params(**params)
-        params['mapper_class'] = self.mapper_class
-        params['role'] = self.serialize_role
+        params["mapper_class"] = self.mapper_class
+        params["role"] = self.serialize_role
 
         # After a successfull attempt to marshal an object has been made, a response
         # is generated using the RepsonseHandler.  Rather than taking the class level
@@ -201,9 +198,9 @@ class KimEndpoint(Endpoint):
         # ensure Marshaling and Serializing are run the same way.
         if self._is_marshal_request():
             req_params = self.get_request_handler_params()
-            params['many'] = req_params.get('many', self.many)
+            params["many"] = req_params.get("many", self.many)
         else:
-            params['many'] = self.many
+            params["many"] = self.many
 
         return params
 
@@ -215,12 +212,12 @@ class KimEndpoint(Endpoint):
         """
 
         params = super(KimEndpoint, self).get_request_handler_params(**params)
-        params['mapper_class'] = self.mapper_class
-        params['role'] = self.marshal_role
-        params['many'] = False
+        params["mapper_class"] = self.mapper_class
+        params["role"] = self.marshal_role
+        params["many"] = False
         # when handling a PUT or PATCH request, self.obj will be set.. There might be a
         # more robust way to handle this?
-        params['obj'] = getattr(self, 'obj', None)
-        params['partial'] = self.is_partial()
+        params["obj"] = getattr(self, "obj", None)
+        params["partial"] = self.is_partial()
 
         return params

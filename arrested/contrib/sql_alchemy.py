@@ -3,14 +3,16 @@ from flask import current_app as app
 from arrested.exceptions import ArrestedException
 
 from ..mixins import (
-    GetListMixin, CreateMixin, GetObjectMixin,
-    PutObjectMixin, PatchObjectMixin,
-    DeleteObjectMixin
+    GetListMixin,
+    CreateMixin,
+    GetObjectMixin,
+    PutObjectMixin,
+    PatchObjectMixin,
+    DeleteObjectMixin,
 )
 
 
 class DBMixin(object):
-
     def get_query(self):
         """Return an SQLAlchemy Query object.  Users using this mixin should  override
         this method.
@@ -42,12 +44,12 @@ class DBMixin(object):
             :meth:`DBObjectMixin.get_result`
         """
         name = self.__class__.__name__
-        raise NotImplementedError('%s must implement get_query method.' % name)
+        raise NotImplementedError("%s must implement get_query method." % name)
 
     def get_db_session(self):
         """Returns the session configured against the Flask appliction instance.
         """
-        return app.extensions['sqlalchemy'].db.session
+        return app.extensions["sqlalchemy"].db.session
 
     def save(self, obj):
         """Add ``obj`` to the SQLAlchemy session and commit the changes back to
@@ -130,11 +132,9 @@ class DBCreateMixin(CreateMixin, DBMixin):
         self.save(obj)
 
 
-class DBObjectMixin(GetObjectMixin,
-                    PutObjectMixin,
-                    PatchObjectMixin,
-                    DeleteObjectMixin,
-                    DBMixin):
+class DBObjectMixin(
+    GetObjectMixin, PutObjectMixin, PatchObjectMixin, DeleteObjectMixin, DBMixin
+):
     """SQLAlchemy powered object mixin that queries a database to retun a single object
     typically by primary key for a given endpoint.
 
@@ -163,8 +163,8 @@ class DBObjectMixin(GetObjectMixin,
     """
 
     model = None
-    url_id_param = 'obj_id'
-    model_id_param = 'id'
+    url_id_param = "obj_id"
+    model_id_param = "id"
 
     def get_result(self, query):
         """Cast the query into a scalar python type.
@@ -185,11 +185,11 @@ class DBObjectMixin(GetObjectMixin,
         :returns: A SQLAlchemy Query object
         """
         if self.model is None:
-            raise ArrestedException('DBObjectMixin requires a model to be set.')
+            raise ArrestedException("DBObjectMixin requires a model to be set.")
 
         idfield = getattr(self.model, self.model_id_param, None)
         if not idfield:
-            raise ArrestedException('DBObjectMixin could not find a valid Model.id.')
+            raise ArrestedException("DBObjectMixin could not find a valid Model.id.")
 
         return query.filter(idfield == self.kwargs[self.url_id_param])
 

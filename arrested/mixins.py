@@ -1,7 +1,11 @@
-
 __all__ = [
-    'GetListMixin', 'CreateMixin', 'GetObjectMixin', 'PutObjectMixin',
-    'PatchObjectMixin', 'DeleteObjectMixin', 'ObjectMixin'
+    "GetListMixin",
+    "CreateMixin",
+    "GetObjectMixin",
+    "PutObjectMixin",
+    "PatchObjectMixin",
+    "DeleteObjectMixin",
+    "ObjectMixin",
 ]
 
 
@@ -13,7 +17,7 @@ class HTTPMixin(object):
         """
         """
 
-        return (self.make_response(body, status=status))
+        return self.make_response(body, status=status)
 
 
 class GetListMixin(HTTPMixin):
@@ -127,7 +131,7 @@ class ObjectMixin(object):
         :raises: :class:`werkzeug.exceptions.BadRequest`
         :returns: The result of :meth:ObjectMixin.get_object`
         """
-        if not getattr(self, '_obj', None):
+        if not getattr(self, "_obj", None):
             self._obj = self.get_object()
             if self._obj is None and not self.allow_none:
                 self.return_error(404)
@@ -237,7 +241,7 @@ class DeleteObjectMixin(HTTPMixin, ObjectMixin):
         :param status: The HTTP status code returned with the response
 
         """
-        return (self.make_response('', status=status))
+        return self.make_response("", status=status)
 
     def handle_delete_request(self):
         """
