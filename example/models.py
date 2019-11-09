@@ -7,7 +7,7 @@ db = SQLAlchemy()
 
 class Planet(db.Model):
 
-    __tablename__ = 'planet'
+    __tablename__ = "planet"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
@@ -17,7 +17,7 @@ class Planet(db.Model):
 
 class Character(db.Model):
 
-    __tablename__ = 'character'
+    __tablename__ = "character"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)

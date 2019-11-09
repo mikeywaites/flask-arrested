@@ -7,19 +7,19 @@ from arrested import ArrestedAPI
 @pytest.yield_fixture
 def app():
     app = Flask(__name__)
-    app.config['TESTING'] = True
+    app.config["TESTING"] = True
 
     # SQLAlchemy settings are only added to stop warnings on app initialization.
     # Unit test suite doen't actually touch the database.
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////opt/code/tests/tests.db'
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////opt/code/tests/tests.db"
     with app.test_request_context():
         yield app
 
 
 @pytest.fixture
 def api_v1(app):
-    api_v1 = ArrestedAPI(app, url_prefix='/v1')
+    api_v1 = ArrestedAPI(app, url_prefix="/v1")
     return api_v1
 
 

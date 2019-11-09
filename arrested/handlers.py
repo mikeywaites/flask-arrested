@@ -5,14 +5,16 @@ from werkzeug.exceptions import BadRequest
 
 
 __all__ = [
-    'Handler', 'ResponseHandler', 'RequestHandler',
-    'JSONRequestMixin', 'JSONResponseMixin'
+    "Handler",
+    "ResponseHandler",
+    "RequestHandler",
+    "JSONRequestMixin",
+    "JSONResponseMixin",
 ]
 
 
 class Handler(object):
-
-    def __init__(self, endpoint, payload_key='payload', **params):
+    def __init__(self, endpoint, payload_key="payload", **params):
 
         self.endpoint = endpoint
         self.params = params
@@ -103,8 +105,7 @@ class JSONRequestMixin(object):
             return request.json or {}
         except BadRequest:
             return self.endpoint.return_error(
-                400,
-                payload={'message': 'Invalid JSON data provided'}
+                400, payload={"message": "Invalid JSON data provided"}
             )
 
 
@@ -126,4 +127,5 @@ class ResponseHandler(Handler, JSONResponseMixin):
     """Basic default ResponseHanlder that expects the data passed to it to be JSON
     serializable without any modifications.
     """
+
     pass

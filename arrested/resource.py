@@ -1,7 +1,7 @@
 from flask import Blueprint
 
 
-__all__ = ['Resource']
+__all__ = ["Resource"]
 
 
 class Resource(Blueprint):
@@ -10,8 +10,15 @@ class Resource(Blueprint):
     """
 
     def __init__(
-            self, name, import_name, api=None, before_all_hooks=None,
-            after_all_hooks=None, *args, **kwargs):
+        self,
+        name,
+        import_name,
+        api=None,
+        before_all_hooks=None,
+        after_all_hooks=None,
+        *args,
+        **kwargs
+    ):
         """Construct a new Reosurce blueprint.  In addition to the normal Blueprint
         options, Resource accepts kwargs to set request middleware.
 
@@ -94,11 +101,8 @@ class Resource(Blueprint):
         """
 
         if self.url_prefix:
-            url = '{prefix}{url}'.format(prefix=self.url_prefix, url=endpoint.url)
+            url = "{prefix}{url}".format(prefix=self.url_prefix, url=endpoint.url)
         else:
             url = endpoint.url
 
-        self.add_url_rule(
-            url,
-            view_func=endpoint.as_view(endpoint.get_name()),
-        )
+        self.add_url_rule(url, view_func=endpoint.as_view(endpoint.get_name()))

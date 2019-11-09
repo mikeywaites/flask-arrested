@@ -1,6 +1,4 @@
-
-
-__all__ = ['ArrestedAPI']
+__all__ = ["ArrestedAPI"]
 
 
 class ArrestedAPI(object):
@@ -8,8 +6,9 @@ class ArrestedAPI(object):
     It acts like ``Flasks``  Blueprint object with a few minor differences.
     """
 
-    def __init__(self, app=None, url_prefix='', before_all_hooks=None,
-                 after_all_hooks=None):
+    def __init__(
+        self, app=None, url_prefix="", before_all_hooks=None, after_all_hooks=None
+    ):
         """Constructor to create a new ArrestedAPI object.
 
         :param app: Flask app object.

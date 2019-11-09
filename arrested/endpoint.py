@@ -28,7 +28,7 @@ class Endpoint(MethodView):
 
     #: The URL this endpoint is mapped against. This will build on top of any url_prefix
     #: defined at the API and Resource level
-    url = ''
+    url = ""
 
     #: A list of functions called before any specific request handler methods are called
     before_all_hooks = []
@@ -84,11 +84,7 @@ class Endpoint(MethodView):
 
         hooks.extend(self.before_all_hooks)
         hooks.extend(
-            getattr(
-                self,
-                'before_{method}_hooks'.format(method=self.meth),
-                []
-            )
+            getattr(self, "before_{method}_hooks".format(method=self.meth), [])
         )
 
         for hook in chain(hooks):
@@ -105,11 +101,7 @@ class Endpoint(MethodView):
         """
 
         hooks = []
-        meth_hooks = getattr(
-            self,
-            'after_{method}_hooks'.format(method=self.meth),
-            []
-        )
+        meth_hooks = getattr(self, "after_{method}_hooks".format(method=self.meth), [])
 
         hooks.extend(meth_hooks)
         hooks.extend(self.after_all_hooks)
@@ -153,7 +145,7 @@ class Endpoint(MethodView):
         """
         return cls.name or cls.__name__.lower()
 
-    def make_response(self, rv, status=200, headers=None, mime='application/json'):
+    def make_response(self, rv, status=200, headers=None, mime="application/json"):
         """Create a response object using the :class:`flask.Response` class.
 
         :param rv: Response value.  If the value is not an instance
@@ -165,12 +157,7 @@ class Endpoint(MethodView):
 
         """
         if not isinstance(rv, Response):
-            resp = Response(
-                response=rv,
-                headers=headers,
-                mimetype=mime,
-                status=status
-            )
+            resp = Response(response=rv, headers=headers, mimetype=mime, status=status)
         else:
             resp = rv
 
@@ -191,9 +178,10 @@ class Endpoint(MethodView):
         :returns: A instance of the Endpoint specified :class:`ResonseHandler`.
         :rtype: :class:`ResponseHandler`
         """
-        assert self.response_handler is not None, \
-            'Please define a response_handler ' \
-            ' for Endpoint: %s' % self.__class__.__name__
+        assert self.response_handler is not None, (
+            "Please define a response_handler "
+            " for Endpoint: %s" % self.__class__.__name__
+        )
 
         return self.response_handler(self, **self.get_response_handler_params())
 
@@ -212,9 +200,10 @@ class Endpoint(MethodView):
         :returns: A instance of the Endpoint specified :class:`RequestHandler`.
         :rtype: :class:`RequestHandler`
         """
-        assert self.request_handler is not None, \
-            'Please define a request_handler ' \
-            ' for Endpoint: %s' % self.__class__.__name__
+        assert self.request_handler is not None, (
+            "Please define a request_handler "
+            " for Endpoint: %s" % self.__class__.__name__
+        )
 
         return self.request_handler(self, **self.get_request_handler_params())
 
