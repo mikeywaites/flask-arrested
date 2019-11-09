@@ -12,16 +12,6 @@ services:
     tty: true
     stdin_open: true
 
-  py2:
-    build:
-      context: .
-      dockerfile: Dockerfile.py2
-    command: py.test -s --cov=arrested --cov-report=term-missing --tb=short tests/
-    volumes:
-      - .:/opt/code
-    tty: true
-    stdin_open: true
-
   api:
     build:
       context: example/
