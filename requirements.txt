@@ -1,4 +1,4 @@
-pytest==3.2.1
+pytest==9.0.3
 sphinx
 pytest-cov
 ipdb
